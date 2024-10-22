@@ -1,0 +1,28 @@
+name: $(date:yyyy-MM-dd_HHmm)
+
+trigger: none
+
+resources:
+  repositories:
+  - repository: Team3BE
+    type: git
+    name: Team3/Team3BE
+    ref: refs/heads/main
+
+stages:
+  - stage: Test
+    jobs:
+      - job: Tests
+        displayName: Test
+        timeoutInMinutes: 240
+
+        pool:
+          name: Azure Pipelines
+
+        steps:
+        - task: PowerShell@2
+            inputs:
+                targetType: 'inline'
+                script: |
+                    Write-Host "Test"
+...
