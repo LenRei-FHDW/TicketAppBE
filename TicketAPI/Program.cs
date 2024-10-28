@@ -1,9 +1,27 @@
+using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Serilog;
+using TicketAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// DbContext
+builder.Services.AddDbContext<TicketApiDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var password = builder.Configuration["ConnectionStrings:DatabasePassword"];
+
+    var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString)
+    {
+        Password = password,
+        SslMode = MySqlSslMode.Required,
+        SslCert = Path.Combine(Directory.GetCurrentDirectory(), "AzureRootCert.pem")
+    };
+    
+    options.UseMySql(connectionStringBuilder.ConnectionString, ServerVersion.AutoDetect(connectionStringBuilder.ConnectionString));
+});
 
 // SeriLog
 builder.Host.UseSerilog((context, configuration) =>
