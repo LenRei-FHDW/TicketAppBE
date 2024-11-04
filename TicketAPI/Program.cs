@@ -1,4 +1,13 @@
+using System.IO;
+using System.Net;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
@@ -33,6 +42,33 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseExceptionHandler(errorApp =>
+    errorApp.Run(async context =>
+    {
+        context.Response.ContentType = "application/json";
+        var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (exceptionHandlerFeature != null)
+        {
+            string message;
+            // Handle specific exceptions here
+            if (false)
+            {
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                message = "Internal Server Error";
+            }
+            
+            var response = new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = message,
+            };
+            await context.Response.WriteAsJsonAsync(response);
+        }
+    }));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
