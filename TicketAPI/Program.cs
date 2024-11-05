@@ -115,6 +115,58 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+//app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "api/{controller=Home}/{action=Index}/{id?}"
+);
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    
+    await SeedRolesAsync(roleManager);
+}
 
 app.Run();
+
+async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
+{
+    string [] roleNames = { "Admin", "Seller", "User" };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
+
+async Task SeedAdminUserAsync(UserManager<IdentityUser> userManager, IConfiguration configuration)
+{
+    var adminUserName = configuration["AdminUser:Username"];
+    var adminEmail = configuration["AdminUser:Email"];
+    var adminPassword = configuration["AdminUser:Password"];
+    
+    var adminUser = await userManager.FindByNameAsync(adminUserName);
+    if (adminUser == null)
+    {
+        var newAdminUser = new IdentityUser
+        {
+            UserName = adminUserName,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+        var createAdminResult = await userManager.CreateAsync(newAdminUser, adminPassword);
+        
+        if (createAdminResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdminUser, "Admin");
+        }
+    }
+}
+

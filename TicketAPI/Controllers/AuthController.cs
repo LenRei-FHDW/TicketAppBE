@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TicketAPI.ViewModels;
 
 namespace TicketAPI.Controllers;
 
@@ -35,6 +36,23 @@ public class AuthController : Controller
         var token = GenerateJwtToken(user);
         return Ok(new { token = token });
         
+    }
+    
+    // POST
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] UserRegistration model)
+    {
+        var user = new ApplicationUser(model.FirstName, model.LastName, model.Email);
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+        
+        await _userManager.AddToRoleAsync(user, "User");
+
+        return Ok();
     }
     
     private string GenerateJwtToken(ApplicationUser user)
