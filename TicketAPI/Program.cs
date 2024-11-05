@@ -115,11 +115,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.MapControllers();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "api/{controller=Home}/{action=Index}/{id?}"
-);
+app.MapControllers();
 
 
 using (var scope = app.Services.CreateScope())
@@ -129,6 +125,7 @@ using (var scope = app.Services.CreateScope())
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     
     await SeedRolesAsync(roleManager);
+    await SeedAdminUserAsync(userManager, configuration);
 }
 
 app.Run();
@@ -146,7 +143,7 @@ async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     }
 }
 
-async Task SeedAdminUserAsync(UserManager<IdentityUser> userManager, IConfiguration configuration)
+async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
 {
     var adminUserName = configuration["AdminUser:Username"];
     var adminEmail = configuration["AdminUser:Email"];
@@ -155,7 +152,8 @@ async Task SeedAdminUserAsync(UserManager<IdentityUser> userManager, IConfigurat
     var adminUser = await userManager.FindByNameAsync(adminUserName);
     if (adminUser == null)
     {
-        var newAdminUser = new IdentityUser
+ 
+        var newAdminUser = new ApplicationUser
         {
             UserName = adminUserName,
             Email = adminEmail,

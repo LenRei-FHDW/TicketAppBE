@@ -24,25 +24,34 @@ public class AuthController : Controller
     
     // POST
     [HttpPost("login")]
-    public async Task<IActionResult> Login(string email, string password)
+    public async Task<IActionResult> Login([FromBody] UserLoginDTO model)
     {
         
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, password))
+        var user = await _userManager.FindByEmailAsync(model.email);
+        if (user == null || !await _userManager.CheckPasswordAsync(user, model.password))
         {
             return Unauthorized();
         }
         
         var token = GenerateJwtToken(user);
-        return Ok(new { token = token });
+        return Ok(new { 
+            firstName = user.FirstName,
+            lastName = user.LastName,
+            token = token 
+        });
         
     }
     
     // POST
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserRegistration model)
+    public async Task<IActionResult> Register([FromBody] UserRegistrationDTO model)
     {
-        var user = new ApplicationUser(model.FirstName, model.LastName, model.Email);
+        if (model.Password != model.RepeatPassword)
+        {
+            return BadRequest(model);
+        }
+        
+        var user = new ApplicationUser(model.FirstName, model.LastName, model.Username, model.Email);
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
