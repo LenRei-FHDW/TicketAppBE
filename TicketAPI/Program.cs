@@ -15,7 +15,9 @@ using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
+using TicketAPI.Interfaces;
 using TicketAPI.Models;
+using TicketAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +67,11 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+});
+
 // SeriLog
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(builder.Configuration));
@@ -73,6 +80,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Interfaces
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
@@ -145,17 +155,16 @@ async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
 
 async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
 {
-    var adminUserName = configuration["AdminUser:Username"];
     var adminEmail = configuration["AdminUser:Email"];
     var adminPassword = configuration["AdminUser:Password"];
     
-    var adminUser = await userManager.FindByNameAsync(adminUserName);
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
     {
  
         var newAdminUser = new ApplicationUser
         {
-            UserName = adminUserName,
+            UserName = adminEmail,
             Email = adminEmail,
             EmailConfirmed = true
         };
