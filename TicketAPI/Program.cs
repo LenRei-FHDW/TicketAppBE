@@ -1,27 +1,29 @@
-using System.IO;
 using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
-using TicketAPI.Interfaces;
-using TicketAPI.Models;
-using TicketAPI.Services;
+using TicketAPI.Data.Models;
+using TicketAPI.Services.Transient;
+using TicketAPI.Services.Scoped;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add eternal dependencies
+builder.Services.AddHttpContextAccessor();
+
 // Add services to the container.
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddTransient<ITokenGenerator, JwtGenerator>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<EmailHelper>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>
@@ -142,7 +144,7 @@ app.Run();
 
 async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
 {
-    string [] roleNames = { "Admin", "Seller", "User" };
+    string [] roleNames = ["Admin", "Seller", "User"];
 
     foreach (var roleName in roleNames)
     {

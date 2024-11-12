@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TicketAPI.Models;
+using TicketAPI.Data.Models;
 
 namespace TicketAPI.Data;
 

@@ -1,4 +1,4 @@
-namespace TicketAPI.ViewModels;
+namespace TicketAPI.Services.DTO;
 
 public class ResendConfirmationEmailModelDTO
 {
