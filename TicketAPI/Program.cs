@@ -9,7 +9,7 @@ using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
 using TicketAPI.Data.Models;
-using TicketAPI.Services.Transient;
+using TicketAPI.Services.Helper;
 using TicketAPI.Services.Scoped;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +22,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddTransient<ITokenGenerator, JwtGenerator>();
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 
 // DbContext

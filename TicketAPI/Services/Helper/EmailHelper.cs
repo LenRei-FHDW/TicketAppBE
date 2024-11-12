@@ -1,4 +1,4 @@
-﻿namespace TicketAPI.Services.Transient;
+﻿namespace TicketAPI.Services.Helper;
 
 public class EmailHelper
 {

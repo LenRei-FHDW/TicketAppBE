@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TicketAPI.Data.Models;
 
-namespace TicketAPI.Services.Transient;
+namespace TicketAPI.Services.Helper;
 
 public interface ITokenGenerator
 {

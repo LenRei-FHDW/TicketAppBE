@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
-using TicketAPI.Services.Transient;
+using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Services.Scoped;
 

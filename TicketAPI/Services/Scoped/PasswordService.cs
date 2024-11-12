@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
-using TicketAPI.Services.Transient;
+using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Services.Scoped;
 
@@ -9,13 +9,11 @@ public class PasswordService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly EmailHelper _emailHelper;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
 
     public PasswordService(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, EmailHelper emailHelper)
     {
         _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
         _emailHelper = emailHelper;
     }
 
