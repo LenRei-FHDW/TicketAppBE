@@ -38,7 +38,7 @@ public class AuthService
             return new LoginResultDTO() { IsEmailConfirmed = false };
         }
 
-        var token = _tokenGenerator.GenerateToken(user);
+        var token = await _tokenGenerator.GenerateToken(user);
         return new LoginResultDTO() { Token = token, IsEmailConfirmed = true };
     }
 
