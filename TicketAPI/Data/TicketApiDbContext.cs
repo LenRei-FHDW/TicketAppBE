@@ -6,13 +6,20 @@ namespace TicketAPI.Data;
 
 public class TicketApiDbContext : IdentityDbContext<ApplicationUser>
 {
-    DbSet<Ticket> tickets;
-    DbSet<Order> orders;
-    DbSet<OrderItem> orderItems;
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Address> Addresses { get; set; }
+    public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+    
     public TicketApiDbContext(DbContextOptions<TicketApiDbContext> options) : base(options) {}
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);  
+        
+        modelBuilder.Entity<ShoppingCartItem>()
+            .HasKey(ci => new { ci.ApplicationUserId, ci.ProductId });
+        
+        base.OnModelCreating(modelBuilder);
         
     }
 }

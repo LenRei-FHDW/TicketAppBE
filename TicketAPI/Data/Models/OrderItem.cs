@@ -1,9 +1,31 @@
-﻿namespace TicketAPI.Data.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace TicketAPI.Data.Models;
 
 public class OrderItem
 {
-    public int OrderItemId { get; set; }
-    public Order Order { get; set; } = null!;
-    public Ticket Ticket { get; set; } = null!;
+    [Key]
+    public Guid OrderItemId { get; set; } = Guid.NewGuid();
+    
+    public Guid OrderID { get; set; }
+    [ForeignKey("OrderID")]
+    [JsonIgnore] 
+    public Order Order { get; set; }
+    
+    public Guid ProductID { get; set; }
+    [ForeignKey("ProductID")]
+    [JsonIgnore] 
+    public Product Product { get; set; }
+    
+    [Required, Range(1, int.MaxValue)]
     public int Quantity { get; set; }
+    
+    [Column(TypeName = "decimal(18,2)")]
+    [Range(0, double.MaxValue)]
+    public decimal SinglePrice { get; set; }
+    
+    [NotMapped]
+    public decimal TotalPrice => SinglePrice * Quantity;
 }
