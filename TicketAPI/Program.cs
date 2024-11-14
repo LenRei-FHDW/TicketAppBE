@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
@@ -87,6 +88,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+    RequestPath = "/Images"
+});
 
 app.UseExceptionHandler(errorApp =>
     errorApp.Run(async context =>
