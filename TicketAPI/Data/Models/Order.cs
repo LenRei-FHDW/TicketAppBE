@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace TicketAPI.Data.Models;
 
@@ -13,10 +12,7 @@ public class Order
     
     public Guid ApplicationUserId { get; set; }
     [ForeignKey("ApplicationUserId")]
-    [JsonIgnore] 
     public ApplicationUser ApplicationUser { get; set; }
-    
-    [JsonIgnore] 
     public ICollection<OrderItem> OrderItems { get; } = new List<OrderItem>();
     
     [NotMapped]

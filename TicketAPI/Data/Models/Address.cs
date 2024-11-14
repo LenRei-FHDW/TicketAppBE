@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
-
 namespace TicketAPI.Data.Models;
 
 public class Address
@@ -11,7 +9,7 @@ public class Address
     
     public string ApplicationUserId { get; set; }
     [ForeignKey("ApplicationUserId")]
-    [JsonIgnore] 
+    
     public ApplicationUser ApplicationUser { get; set; }
 
     [Required]

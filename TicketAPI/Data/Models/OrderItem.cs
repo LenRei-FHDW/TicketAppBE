@@ -11,12 +11,10 @@ public class OrderItem
     
     public Guid OrderID { get; set; }
     [ForeignKey("OrderID")]
-    [JsonIgnore] 
     public Order Order { get; set; }
     
-    public Guid ProductID { get; set; }
+    public int ProductID { get; set; }
     [ForeignKey("ProductID")]
-    [JsonIgnore] 
     public Product Product { get; set; }
     
     [Required, Range(1, int.MaxValue)]

@@ -6,7 +6,7 @@ namespace TicketAPI.Data.Models;
 public class Product
 {
     [Key]
-    public Guid ProductId { get; set; } = Guid.NewGuid();
+    public int ProductId { get; set; }
     
     [Required]
     public string Name {get; set;} = String.Empty;
