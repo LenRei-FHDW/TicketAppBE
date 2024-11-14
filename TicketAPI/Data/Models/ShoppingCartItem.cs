@@ -6,7 +6,7 @@ namespace TicketAPI.Data.Models;
 
 public class ShoppingCartItem
 {
-    public Guid ApplicationUserId { get; set; }
+    public string ApplicationUserId { get; set; }
     [ForeignKey("ApplicationUserId")]
     [JsonIgnore] 
     public ApplicationUser ApplicationUser { get; set; }
