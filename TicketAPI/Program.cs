@@ -28,7 +28,6 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
-builder.Services.AddTransient<PDFGenerator>();
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
