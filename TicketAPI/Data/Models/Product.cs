@@ -2,11 +2,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TicketAPI.Data.Models;
-
 public class Product
 {
-    [Key]
-    public Guid ProductId { get; set; } = new Guid();
+    [Key] public Guid ProductId { get; set; } = Guid.NewGuid();
     
     [Required]
     public string Name {get; set;} = String.Empty;
@@ -25,7 +23,4 @@ public class Product
     public string CreaterId { get; set; }
     
     public decimal Rating {get; set;}
-    
-    
-    
 }

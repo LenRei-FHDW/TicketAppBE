@@ -8,7 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
+using TicketAPI.Data.Exceptions;
 using TicketAPI.Data.Models;
+using TicketAPI.Data.Repositories;
 using TicketAPI.Services.Helper;
 using TicketAPI.Services.Scoped;
 
@@ -21,9 +23,18 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<EmailService>();
-builder.Services.AddTransient<ITokenGenerator, JwtGenerator>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
+builder.Services.AddTransient<PDFGenerator>();
+
+//Add Repositories
+builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
+builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
+builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
+builder.Services.AddScoped<OrderRepository>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>
@@ -83,8 +94,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Interfaces
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+//Mapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
@@ -97,8 +108,20 @@ app.UseExceptionHandler(errorApp =>
         {
             string message;
             // Handle specific exceptions here
-            if (false)
+            if (exceptionHandlerFeature.Error is KeyNotFoundException)
             {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                message = "Key not found";
+            }
+            else if (exceptionHandlerFeature.Error is ForbiddenException)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                message = "Forbidden";
+            }
+            else if (exceptionHandlerFeature.Error is SecurityTokenExpiredException)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                message = "The token expired";
             }
             else
             {

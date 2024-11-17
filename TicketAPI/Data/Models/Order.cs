@@ -10,7 +10,7 @@ public class Order
     
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     
-    public Guid ApplicationUserId { get; set; }
+    public string ApplicationUserId { get; set; }
     [ForeignKey("ApplicationUserId")]
     public ApplicationUser ApplicationUser { get; set; }
     public ICollection<OrderItem> OrderItems { get; } = new List<OrderItem>();
