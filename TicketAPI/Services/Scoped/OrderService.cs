@@ -12,16 +12,15 @@ namespace TicketAPI.Services.Scoped;
 
 public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper){
 
-    public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string email)
+    public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string userId)
     {
-       var orders = await _context.Orders
-            .Where(o => o.ApplicationUser.Email == email).ToListAsync();
+       var orders = await _orderRepository.GetByApplicationUserIdJoinOrderItems(userId);
        return _mapper.Map<IEnumerable<OrderPreviewDTO>>(orders);
     }
 
     public async Task<OrderDTO> GetOrder(string userId, Guid id, bool isAdmin)
     {
-        var order = await _orderRepository.GetByIdJoinOrderItems(id);
+        var order = await _orderRepository.GetByIdJoinOrderItemsJoinProducts(id);
         if (order.ApplicationUserId == userId || isAdmin)
         {
             return _mapper.Map<OrderDTO>(order);

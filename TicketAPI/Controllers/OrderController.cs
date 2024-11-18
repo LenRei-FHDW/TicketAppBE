@@ -16,8 +16,8 @@ public class OrderController(OrderService _orderService) : ControllerBase
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<OrderPreviewDTO>>> GetOrdersOfUser()
     {
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.GetOrdersOfUsers(email));
+        var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Ok(await _orderService.GetOrdersOfUsers(userId));
     }
 
     [Authorize]
