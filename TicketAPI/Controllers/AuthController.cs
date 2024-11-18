@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.Scoped;
 using TicketAPI.Services.DTO;
@@ -50,7 +51,16 @@ namespace TicketAPI.Controllers
             }
             return BadRequest();
         }
+        
+        [HttpPost("delete-user-admin")]
+        public async Task<IActionResult> DeleteUser()
+        {
+            var email = HttpContext.User?.FindFirst("Email")?.Value;
+            await _authService.DeleteUser(new ResendConfirmationEmailModelDTO(){Email = email});
+            return NoContent();
+        }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("delete-user")]
         public async Task<IActionResult> DeleteUser([FromBody] ResendConfirmationEmailModelDTO model)
         {

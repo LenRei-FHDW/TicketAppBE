@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Scoped;

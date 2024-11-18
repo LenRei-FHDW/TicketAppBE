@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketAPI.Data;
 
@@ -11,9 +12,11 @@ using TicketAPI.Data;
 namespace TicketAPI.Migrations
 {
     [DbContext(typeof(TicketApiDbContext))]
-    partial class TicketApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241117000353_AddTicketUsingTPH")]
+    partial class AddTicketUsingTPH
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -324,6 +327,11 @@ namespace TicketAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
+
                     b.Property<string>("ImageName")
                         .HasColumnType("longtext");
 
@@ -344,10 +352,14 @@ namespace TicketAPI.Migrations
 
                     b.ToTable("Products");
 
+                    b.HasDiscriminator().HasValue("Product");
+
+                    b.UseTphMappingStrategy();
+
                     b.HasData(
                         new
                         {
-                            ProductId = new Guid("40cbb04c-9909-4f8f-b05f-a4531965d8aa"),
+                            ProductId = new Guid("6354a870-e836-4731-8717-b44d95fc7e0a"),
                             CreaterId = "user-123",
                             Description = "This is the first sample product.",
                             ImageName = "sample1.jpg",
@@ -358,7 +370,7 @@ namespace TicketAPI.Migrations
                         },
                         new
                         {
-                            ProductId = new Guid("c4da8540-079d-4aa4-9b69-e4a91f1fc14a"),
+                            ProductId = new Guid("055f1d69-40bd-4292-8fce-d7e0160c345b"),
                             CreaterId = "user-456",
                             Description = "This is the second sample product.",
                             ImageName = "sample2.jpg",
@@ -385,6 +397,13 @@ namespace TicketAPI.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ShoppingCartItems");
+                });
+
+            modelBuilder.Entity("TicketAPI.Data.Models.Ticket", b =>
+                {
+                    b.HasBaseType("TicketAPI.Data.Models.Product");
+
+                    b.HasDiscriminator().HasValue("Ticket");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
