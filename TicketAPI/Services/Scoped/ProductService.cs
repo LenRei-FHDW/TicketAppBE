@@ -7,24 +7,24 @@ using TicketAPI.Services.DTO;
 
 namespace TicketAPI.Services.Scoped;
 
-public class ProductService(IRepository<Product, Guid> repository, IMapper mapper)
+public class ProductService(ProductRepository productRepository, IMapper mapper)
 {
-    public async Task<IEnumerable<ProductPreview>> GetAllProductsAsync()
+    public async Task<IEnumerable<ProductPreviewDTO>> GetAllProductsAsync()
     {
-        var productList = await repository.GetAllAsync();
-        return mapper.Map<IEnumerable<ProductPreview>>(productList);
+        var productList = await productRepository.GetAllWhereNotDeletedAsync();
+        return mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
     }
 
     public async Task<Product?> GetArticleById(Guid id)
     {
-        return await repository.GetByIdAsync(id);
+        return await productRepository.GetByIdAsync(id);
     }
 
-    public async Task<ProductDTO> AddProduct(ProductPostDTO product)
+    public async Task<ProductDTO> AddProduct(string userId, ProductPostDTO product)
     {
         var productEntity = mapper.Map<Product>(product);
-        var result =  await repository.AddAsync(productEntity);
-        
+        productEntity.ApplicationUserId = userId;
+        var result =  await productRepository.AddAsync(productEntity);
         return mapper.Map<ProductDTO>(result);
     }
 }

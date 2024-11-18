@@ -12,8 +12,8 @@ using TicketAPI.Data;
 namespace TicketAPI.Migrations
 {
     [DbContext(typeof(TicketApiDbContext))]
-    [Migration("20241117223805_DeleteTickets")]
-    partial class DeleteTickets
+    [Migration("20241118104621_AddExampleProductsTry")]
+    partial class AddExampleProductsTry
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -319,9 +319,8 @@ namespace TicketAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<string>("CreaterId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -345,31 +344,9 @@ namespace TicketAPI.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.ToTable("Products");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.HasData(
-                        new
-                        {
-                            ProductId = new Guid("40cbb04c-9909-4f8f-b05f-a4531965d8aa"),
-                            CreaterId = "user-123",
-                            Description = "This is the first sample product.",
-                            ImageName = "sample1.jpg",
-                            IsDeleted = false,
-                            Name = "Sample Product 1",
-                            Price = 19.99m,
-                            Rating = 4.5m
-                        },
-                        new
-                        {
-                            ProductId = new Guid("c4da8540-079d-4aa4-9b69-e4a91f1fc14a"),
-                            CreaterId = "user-456",
-                            Description = "This is the second sample product.",
-                            ImageName = "sample2.jpg",
-                            IsDeleted = false,
-                            Name = "Sample Product 2",
-                            Price = 29.99m,
-                            Rating = 4.0m
-                        });
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.ShoppingCartItem", b =>
@@ -480,6 +457,15 @@ namespace TicketAPI.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("TicketAPI.Data.Models.Product", b =>
+                {
+                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "Creater")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.Navigation("Creater");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.ShoppingCartItem", b =>

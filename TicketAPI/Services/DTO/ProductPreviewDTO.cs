@@ -1,6 +1,6 @@
 ﻿namespace TicketAPI.Services.DTO;
 
-public class ProductPreview
+public class ProductPreviewDTO
 {
     public Guid ProductId { get; set; }
     public string Name { get; set; }

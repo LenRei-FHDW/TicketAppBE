@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Scoped;
@@ -17,7 +18,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpGet("listArticles")]
-    public async Task<ActionResult<IEnumerable<ProductPreview>>> GetArticles()
+    public async Task<ActionResult<IEnumerable<ProductPreviewDTO>>> GetArticles()
     {
         return Ok(await _productService.GetAllProductsAsync());
     }
@@ -29,12 +30,13 @@ public class ArticleController : ControllerBase
         return Ok(product);
     }
     
-    [Authorize (Roles = "Admin")]
+    [Authorize (Roles = "Admin, Seller")]
     [HttpPost("add")]
     public async Task<IActionResult> AddArticle([FromBody] ProductPostDTO product)
     {
-        var created = await _productService.AddProduct(product);
-        UriBuilder uriBuilder = new UriBuilder($"http://localhost:5000/api/Article/{created.ProductId}");
+        var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var created = await _productService.AddProduct(userId, product);
+        UriBuilder uriBuilder = new UriBuilder($"https://localhost:44378/api/Article/{created.ProductId}");
         return Created(uriBuilder.Uri, product);
     }
 }

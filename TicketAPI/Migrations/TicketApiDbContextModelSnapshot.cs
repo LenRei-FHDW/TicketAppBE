@@ -316,9 +316,8 @@ namespace TicketAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<string>("CreaterId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -342,13 +341,15 @@ namespace TicketAPI.Migrations
 
                     b.HasKey("ProductId");
 
+                    b.HasIndex("ApplicationUserId");
+
                     b.ToTable("Products");
 
                     b.HasData(
                         new
                         {
-                            ProductId = new Guid("40cbb04c-9909-4f8f-b05f-a4531965d8aa"),
-                            CreaterId = "user-123",
+                            ProductId = new Guid("f65b227e-da5a-4af5-acee-049b87bc96d6"),
+                            ApplicationUserId = "beb35cf8-25e7-4370-96f4-583819414643",
                             Description = "This is the first sample product.",
                             ImageName = "sample1.jpg",
                             IsDeleted = false,
@@ -358,8 +359,8 @@ namespace TicketAPI.Migrations
                         },
                         new
                         {
-                            ProductId = new Guid("c4da8540-079d-4aa4-9b69-e4a91f1fc14a"),
-                            CreaterId = "user-456",
+                            ProductId = new Guid("c9721778-5331-4b35-8c09-639f6648a55a"),
+                            ApplicationUserId = "beb35cf8-25e7-4370-96f4-583819414643",
                             Description = "This is the second sample product.",
                             ImageName = "sample2.jpg",
                             IsDeleted = false,
@@ -477,6 +478,15 @@ namespace TicketAPI.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("TicketAPI.Data.Models.Product", b =>
+                {
+                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "Creater")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.Navigation("Creater");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.ShoppingCartItem", b =>

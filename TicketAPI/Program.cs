@@ -31,7 +31,7 @@ builder.Services.AddTransient<EmailHelper>();
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
-builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
+builder.Services.AddScoped<ProductRepository>();
 builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
 builder.Services.AddScoped<OrderRepository>();
 

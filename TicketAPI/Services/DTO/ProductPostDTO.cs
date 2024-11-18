@@ -8,5 +8,5 @@ public class ProductPostDTO
     
     public decimal Price {get; set;}
     
-    public decimal Rating {get; set;}
+    public string ImageName {get; set;}
 }

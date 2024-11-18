@@ -6,7 +6,7 @@ using TicketAPI.Services.DTO;
 
 namespace TicketAPI.Services.Helper.Mappings;
 
-public class SinglePriceResolver(IRepository<Product, Guid> productRepository)
+public class SinglePriceResolver(ProductRepository productRepository)
     : IValueResolver<OrderItemPostDTO, OrderItem, decimal>
 {
     public decimal Resolve(OrderItemPostDTO source, OrderItem destination, decimal destMember,

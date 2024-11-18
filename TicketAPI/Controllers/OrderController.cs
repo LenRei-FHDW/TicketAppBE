@@ -24,15 +24,15 @@ public class OrderController(OrderService _orderService) : ControllerBase
     [HttpGet("show/{id}")]
     public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
     {
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.GetOrder(email, id, false));
+        var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Ok(await _orderService.GetOrder(userId, id, false));
     }
 
     [Authorize]
     [HttpPost("create")]
     public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] IEnumerable<OrderItemPostDTO> orderItems)
     {
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.CreateNewOrder(email, orderItems));
+        var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Ok(await _orderService.CreateNewOrder(userId, orderItems));
     }
 }
