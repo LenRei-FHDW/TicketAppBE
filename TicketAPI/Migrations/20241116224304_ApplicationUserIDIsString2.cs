@@ -7,7 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TicketAPI.Migrations
 {
     /// <inheritdoc />
+<<<<<<<< HEAD:TicketAPI/Migrations/20241116224304_ApplicationUserIDIsString2.cs
     public partial class ApplicationUserIDIsString2 : Migration
+========
+    public partial class EditModels : Migration
+>>>>>>>> main:TicketAPI/Migrations/20241114162201_EditModels.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

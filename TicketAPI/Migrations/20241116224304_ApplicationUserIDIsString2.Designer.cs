@@ -12,8 +12,13 @@ using TicketAPI.Data;
 namespace TicketAPI.Migrations
 {
     [DbContext(typeof(TicketApiDbContext))]
+<<<<<<<< HEAD:TicketAPI/Migrations/20241116224304_ApplicationUserIDIsString2.Designer.cs
     [Migration("20241116224304_ApplicationUserIDIsString2")]
     partial class ApplicationUserIDIsString2
+========
+    [Migration("20241114162201_EditModels")]
+    partial class EditModels
+>>>>>>>> main:TicketAPI/Migrations/20241114162201_EditModels.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
