@@ -12,8 +12,8 @@ using TicketAPI.Data;
 namespace TicketAPI.Migrations
 {
     [DbContext(typeof(TicketApiDbContext))]
-    [Migration("20241113100746_Fis")]
-    partial class Fis
+    [Migration("20241114162201_EditModels")]
+    partial class EditModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -157,6 +157,43 @@ namespace TicketAPI.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TicketAPI.Data.Models.Address", b =>
+                {
+                    b.Property<Guid>("AddressId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Zip")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("AddressId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Addresses");
+                });
+
             modelBuilder.Entity("TicketAPI.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -231,79 +268,102 @@ namespace TicketAPI.Migrations
 
             modelBuilder.Entity("TicketAPI.Data.Models.Order", b =>
                 {
-                    b.Property<int>("OrderId")
+                    b.Property<Guid>("OrderId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("OrderId"));
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.HasKey("OrderId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.OrderItem", b =>
                 {
-                    b.Property<int>("OrderItemId")
+                    b.Property<Guid>("OrderItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("OrderItemId"));
+                    b.Property<Guid>("OrderID")
+                        .HasColumnType("char(36)");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProductID")
+                        .HasColumnType("char(36)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
+                    b.Property<decimal>("SinglePrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("OrderItemId");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderID");
 
-                    b.HasIndex("TicketId");
+                    b.HasIndex("ProductID");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("TicketAPI.Data.Models.Ticket", b =>
+            modelBuilder.Entity("TicketAPI.Data.Models.Product", b =>
                 {
-                    b.Property<int>("TicketId")
+                    b.Property<Guid>("ProductId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("TicketId"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("varchar(255)");
+                    b.Property<string>("CreaterId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("ImageName")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Rating")
                         .HasColumnType("decimal(65,30)");
 
-                    b.HasKey("TicketId");
+                    b.HasKey("ProductId");
 
-                    b.HasIndex("ApplicationUserId");
+                    b.ToTable("Products");
+                });
 
-                    b.ToTable("Ticket");
+            modelBuilder.Entity("TicketAPI.Data.Models.ShoppingCartItem", b =>
+                {
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("ApplicationUserId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ShoppingCartItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -357,53 +417,78 @@ namespace TicketAPI.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TicketAPI.Data.Models.Order", b =>
+            modelBuilder.Entity("TicketAPI.Data.Models.Address", b =>
                 {
-                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "User")
-                        .WithMany("Orders")
-                        .HasForeignKey("UserId")
+                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany("Addresses")
+                        .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("TicketAPI.Data.Models.Order", b =>
+                {
+                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany("Orders")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.OrderItem", b =>
                 {
                     b.HasOne("TicketAPI.Data.Models.Order", "Order")
-                        .WithMany("Items")
-                        .HasForeignKey("OrderId")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TicketAPI.Data.Models.Ticket", "Ticket")
+                    b.HasOne("TicketAPI.Data.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("TicketId")
+                        .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Ticket");
+                    b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("TicketAPI.Data.Models.Ticket", b =>
+            modelBuilder.Entity("TicketAPI.Data.Models.ShoppingCartItem", b =>
                 {
-                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", null)
-                        .WithMany("Tickets")
-                        .HasForeignKey("ApplicationUserId");
+                    b.HasOne("TicketAPI.Data.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany("ShoppingCartItems")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketAPI.Data.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("Addresses");
+
                     b.Navigation("Orders");
 
-                    b.Navigation("Tickets");
+                    b.Navigation("ShoppingCartItems");
                 });
 
             modelBuilder.Entity("TicketAPI.Data.Models.Order", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }
