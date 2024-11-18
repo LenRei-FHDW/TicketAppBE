@@ -1,5 +1,8 @@
 ﻿namespace TicketAPI.Services.Helper;
 
+/// <summary>
+/// Generates email texts.
+/// </summary>
 public class EmailHelper
 {
     private readonly LinkGenerator _linkGenerator;
@@ -11,6 +14,13 @@ public class EmailHelper
         _emailSender = emailSender;
     }
 
+    /// <summary>
+    /// Generates the text for a verification email.
+    /// </summary>
+    /// <param name="code">The code used.</param>
+    /// <param name="context">The HttpContext.</param>
+    /// <param name="email">The email receiver.</param>
+    /// <param name="userId">The target user of the verification.</param>
     public void GenerateVerificationEmail(string code, HttpContext context, string email, string userId)
     {
         var callbackUrl = _linkGenerator.GetUriByAction(
@@ -23,6 +33,12 @@ public class EmailHelper
             $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>\"");
     }
 
+    /// <summary>
+    /// Generates an email to reset the password.
+    /// </summary>
+    /// <param name="code"></param>
+    /// <param name="email"></param>
+    /// <param name="userId"></param>
     public void GenerateResetEmail(string code, string email,
         string userId)
     {
