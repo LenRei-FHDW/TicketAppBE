@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.Scoped;
 using TicketAPI.Services.DTO;
@@ -61,6 +62,15 @@ namespace TicketAPI.Controllers
                     $"\"Registration successful. Please check your email to confirm your account.\"");
             }
             return BadRequest();
+        }
+        
+		[Authorize(Roles = "Admin")]
+        [HttpPost("delete-user-admin")]
+        public async Task<IActionResult> DeleteUser()
+        {
+            var email = HttpContext.User?.FindFirst("Email")?.Value;
+            await _authService.DeleteUser(new ResendConfirmationEmailModelDTO(){Email = email});
+            return NoContent();
         }
 
         /// <summary>
