@@ -16,6 +16,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.SinglePrice, opt => opt.MapFrom<SinglePriceResolver>());
         CreateMap<Order, OrderPreviewDTO>();
         CreateMap<Product, ProductDTO>();
-        CreateMap<Product, ProductPreview>();
+        CreateMap<Product, ProductPreviewDTO>();
     }
 }

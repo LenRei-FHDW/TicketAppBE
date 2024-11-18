@@ -29,7 +29,7 @@ public class TicketApiDbContext : IdentityDbContext<ApplicationUser>
                 Price = 19.99m,
                 ImageName = "sample1.jpg",
                 IsDeleted = false,
-                CreaterId = "user-123",
+                ApplicationUserId = "beb35cf8-25e7-4370-96f4-583819414643",
                 Rating = 4.5m
             },
             new Product
@@ -40,7 +40,7 @@ public class TicketApiDbContext : IdentityDbContext<ApplicationUser>
                 Price = 29.99m,
                 ImageName = "sample2.jpg",
                 IsDeleted = false,
-                CreaterId = "user-456",
+                ApplicationUserId = "beb35cf8-25e7-4370-96f4-583819414643",
                 Rating = 4.0m
             }
         );

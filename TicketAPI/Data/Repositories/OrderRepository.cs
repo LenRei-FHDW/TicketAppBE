@@ -13,4 +13,19 @@ public class OrderRepository(TicketApiDbContext context) : Repository<Order, Gui
                 .ThenInclude(e => e.Product)
                 .FirstOrDefaultAsync(e => e.OrderId == orderId) ?? throw new KeyNotFoundException();
     }
+
+    public async Task<Order> GetByIdJoinOrderItemsJoinProducts(Guid orderId)
+    {
+        return await _dbSet
+            .Include(e => e.OrderItems)
+            .ThenInclude(e => e.Product)
+            .FirstOrDefaultAsync(e => e.OrderId == orderId) ?? throw new KeyNotFoundException();
+    }
+
+    public async Task<IEnumerable<Order>> GetByApplicationUserIdJoinOrderItems(string userId)
+    {
+        return await _dbSet
+            .Include(e => e.OrderItems)
+            .Where(o => o.ApplicationUserId == userId).ToListAsync();
+    }
 }

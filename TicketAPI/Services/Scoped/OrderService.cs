@@ -12,29 +12,27 @@ namespace TicketAPI.Services.Scoped;
 
 public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper){
 
-    public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string email)
+    public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string userId)
     {
-       var orders = await _context.Orders
-            .Where(o => o.ApplicationUser.Email == email).ToListAsync();
+       var orders = await _orderRepository.GetByApplicationUserIdJoinOrderItems(userId);
        return _mapper.Map<IEnumerable<OrderPreviewDTO>>(orders);
     }
 
-    public async Task<OrderDTO> GetOrder(string email, Guid id, bool isAdmin)
+    public async Task<OrderDTO> GetOrder(string userId, Guid id, bool isAdmin)
     {
-        var order = await _orderRepository.GetByIdAsynchLoadEager(id);
-        if (order.ApplicationUser.Email == email || isAdmin)
+        var order = await _orderRepository.GetByIdJoinOrderItemsJoinProducts(id);
+        if (order.ApplicationUserId == userId || isAdmin)
         {
             return _mapper.Map<OrderDTO>(order);
         }
         throw new ForbiddenException();
     }
 
-    public async Task<OrderDTO> CreateNewOrder(string email, IEnumerable<OrderItemPostDTO> orderItemsDtos)
+    public async Task<OrderDTO> CreateNewOrder(string userId, IEnumerable<OrderItemPostDTO> orderItemsDtos)
     {
-        var user = await _userManager.FindByEmailAsync(email);
         var order = new Order
         {
-            ApplicationUser = user
+            ApplicationUserId = userId
         };
         var orderItems = _mapper.Map<IEnumerable<OrderItem>>(orderItemsDtos).ToList();
         foreach (var item in orderItems)
