@@ -11,7 +11,7 @@ using TicketAPI.Services.Helper;
 namespace TicketAPI.Services.Scoped;
 
 public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper){
-
+    
     public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string email)
     {
        var orders = await _context.Orders
