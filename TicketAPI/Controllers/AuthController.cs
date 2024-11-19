@@ -19,6 +19,7 @@ namespace TicketAPI.Controllers
             _authService = authService;
         }
         
+
         /// <summary>
         /// Response to a login call.
         /// </summary>

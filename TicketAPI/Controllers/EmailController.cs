@@ -20,6 +20,7 @@ public class EmailController: ControllerBase
         _emailService = emailService;
     }
 
+
     /// <summary>
     /// Called to confirms that the email is really owned by the caller.
     /// </summary>

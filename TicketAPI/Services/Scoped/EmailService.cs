@@ -5,6 +5,9 @@ using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Services.Scoped;
 
+/// <summary>
+/// Sends emails to the target.
+/// </summary>
 public class EmailService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -18,6 +21,12 @@ public class EmailService
         _emailHelper = emailHelper;
     }
 
+    /// <summary>
+    /// Checks if the used code matches the user.
+    /// </summary>
+    /// <param name="userId">The user that requests the confirmation.</param>
+    /// <param name="code">The confirmation code to check.</param>
+    /// <returns>That the user exists, the request completed and wether it succeeded.</returns>
     public async Task<ConfirmEmailResultDTO> ConfirmEmail(string userId, string code)
     {
         if (userId == null || code == null)
@@ -34,6 +43,11 @@ public class EmailService
         return new ConfirmEmailResultDTO(true, true, false);
     }
 
+    /// <summary>
+    /// Resends the email with a confirmation token.
+    /// </summary>
+    /// <param name="model">The target email.</param>
+    /// <returns>That the user exists and wether the email was confirmed.</returns>
     public async Task<ConfirmEmailResultDTO> ResendConfirmationEmail(ResendConfirmationEmailModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);

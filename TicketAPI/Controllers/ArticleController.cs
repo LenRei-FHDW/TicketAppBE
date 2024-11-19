@@ -6,7 +6,7 @@ using TicketAPI.Services.Scoped;
 namespace TicketAPI.Controllers;
 
 /// <summary>
-/// This controller manages all calls coresponding to articles.
+/// This controller manages all calls coresponding to articles management.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -18,6 +18,7 @@ public class ArticleController : ControllerBase
     {
         _productService = productService;
     }
+
 
     /// <summary>
     /// Lists all articles if called.

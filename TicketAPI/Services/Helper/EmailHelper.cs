@@ -14,6 +14,7 @@ public class EmailHelper
         _emailSender = emailSender;
     }
 
+
     /// <summary>
     /// Generates the text for a verification email.
     /// </summary>

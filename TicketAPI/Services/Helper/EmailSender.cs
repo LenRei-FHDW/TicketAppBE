@@ -25,6 +25,7 @@ public class EmailSender : IEmailSender
         client.EnableSsl = bool.Parse(emailSettings["EnableSsl"]);
     }
 
+
     /// <summary>
     /// Creates an email and sends it.
     /// </summary>

@@ -20,6 +20,7 @@ public class PasswordController : ControllerBase
         _passwordService = passwordService;
     }
 
+
     /// <summary>
     /// Sends a mail with a reset link.
     /// </summary>

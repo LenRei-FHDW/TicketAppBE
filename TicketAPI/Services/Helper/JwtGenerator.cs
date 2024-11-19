@@ -16,7 +16,7 @@ public interface ITokenGenerator
 }
 
 /// <summary>
-/// USed to generate auth tokens.
+/// Used to generate auth tokens.
 /// </summary>
 public class JwtGenerator : ITokenGenerator
 {
@@ -28,6 +28,7 @@ public class JwtGenerator : ITokenGenerator
         _configuration = configuration;
         _userManager = userManager;
     }
+
 
     /// <summary>
     /// Creates a new auth token.
