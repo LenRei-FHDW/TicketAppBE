@@ -92,7 +92,7 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder => {
-        builder.WithOrigins("*.pfax423.store", "https://localhost:7145");
+        builder.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246");
         builder.AllowAnyMethod();
         builder.AllowAnyHeader();
     });
