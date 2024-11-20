@@ -27,7 +27,7 @@ public class UserRepository(TicketApiDbContext _context) : IUserRepository
     }
 
     /// <summary>
-    /// Update ApplicationUser in Databse
+    /// Update ApplicationUser in Database
     /// </summary>
     /// <param name="user">Application Model</param>
     public async Task UpdateUserAsync(ApplicationUser user)
