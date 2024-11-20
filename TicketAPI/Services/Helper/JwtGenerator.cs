@@ -14,6 +14,10 @@ public interface ITokenGenerator
 {
     public Task<string> GenerateToken(ApplicationUser user);
 }
+
+/// <summary>
+/// Used to generate auth tokens.
+/// </summary>
 public class JwtGenerator : ITokenGenerator
 {
     private readonly IConfiguration _configuration;
@@ -25,6 +29,12 @@ public class JwtGenerator : ITokenGenerator
         _userManager = userManager;
     }
 
+
+    /// <summary>
+    /// Creates a new auth token.
+    /// </summary>
+    /// <param name="user">The user of the token.</param>
+    /// <returns>The token.</returns>
     public async Task<string> GenerateToken(ApplicationUser user)
     {
         var claims = new List<Claim>
