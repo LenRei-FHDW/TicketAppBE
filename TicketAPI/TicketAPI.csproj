@@ -30,11 +30,8 @@
 
     <ItemGroup>
       <Folder Include="Data\Repository\" />
-<<<<<<< HEAD
       <Folder Include="Uploads\" />
-=======
       <Folder Include="Migrations\" />
->>>>>>> main
     </ItemGroup>
 
 </Project>
