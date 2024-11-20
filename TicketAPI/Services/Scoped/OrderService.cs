@@ -13,25 +13,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages all actions of ordering.
 /// </summary>
-public class OrderService
-{
-    private readonly OrderRepository _orderRepository;
-    private readonly IRepository<OrderItem, Guid> _orderItemRepository;
-    private readonly TicketApiDbContext _context;
-    private readonly IMapper _mapper;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly EmailHelper _mailHelper;
-
-    public OrderService(OrderRepository orderRepository, IRepository<OrderItem, Guid> orderItemRepository, TicketApiDbContext context, IMapper mapper, UserManager<ApplicationUser> userManager, EmailHelper mailHelper)
-    {
-        _orderRepository = orderRepository;
-        _orderItemRepository = orderItemRepository;
-        _context = context;
-        _mapper = mapper;
-        _userManager = userManager;
-        _mailHelper = mailHelper;
-    }
-
+public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper){
+    
 
     /// <summary>
     /// Collects all orders of the user with this email. 
