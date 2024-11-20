@@ -5,6 +5,9 @@ using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Services.Scoped;
 
+/// <summary>
+/// Manages Authentification.
+/// </summary>
 public class AuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -24,6 +27,11 @@ public class AuthService
     }
 
 
+    /// <summary>
+    /// Logs the user in and creates an auth token.
+    /// </summary>
+    /// <param name="model">Email and password.</param>
+    /// <returns>A result with the auth token on success.</returns>
     public async Task<LoginResultDTO?> LoginAsync(LoginModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
@@ -42,6 +50,11 @@ public class AuthService
         return new LoginResultDTO() { Token = token, IsEmailConfirmed = true };
     }
 
+    /// <summary>
+    /// Checks the user registration and sends a verification on success.
+    /// </summary>
+    /// <param name="model">Full name, email and password.</param>
+    /// <returns>Success of the register and whether the repeat password matches the passsword.</returns>
     public async Task<RegisterResultDTO> Register(RegisterModelDTO model)
     {
         if (model.Password != model.RepeatPassword)
@@ -67,6 +80,11 @@ public class AuthService
         return new RegisterResultDTO(true, false);
     }
 
+    /// <summary>
+    /// Deletes the matching user.
+    /// </summary>
+    /// <param name="model">The eamil of the user to delete.</param>
+    /// <returns>The Task that represents the asynchronous operation, containing the identity result.</returns>
     public async Task DeleteUser(ResendConfirmationEmailModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);

@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
 using TicketAPI.Data;
+using TicketAPI.Data.Exceptions;
 using TicketAPI.Data.Models;
+using TicketAPI.Data.Repositories;
 using TicketAPI.Services.Helper;
 using TicketAPI.Services.Scoped;
 
@@ -22,9 +24,17 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<EmailService>();
-builder.Services.AddTransient<ITokenGenerator, JwtGenerator>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
+
+//Add Repositories
+builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
+builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
+builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
+builder.Services.AddScoped<OrderRepository>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>
@@ -79,13 +89,23 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(builder.Configuration));
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder => {
+        builder.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246");
+        builder.AllowAnyMethod();
+        builder.AllowAnyHeader();
+    });
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Interfaces
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+//Mapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
@@ -105,8 +125,20 @@ app.UseExceptionHandler(errorApp =>
         {
             string message;
             // Handle specific exceptions here
-            if (false)
+            if (exceptionHandlerFeature.Error is KeyNotFoundException)
             {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                message = "Key not found";
+            }
+            else if (exceptionHandlerFeature.Error is ForbiddenException)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                message = "Forbidden";
+            }
+            else if (exceptionHandlerFeature.Error is SecurityTokenExpiredException)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                message = "The token expired";
             }
             else
             {
@@ -131,6 +163,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

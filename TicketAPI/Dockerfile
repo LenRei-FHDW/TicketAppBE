@@ -2,10 +2,13 @@
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
+# Remove line below for Prod
+ENV ASPNETCORE_ENVIRONMENT=Development
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
+# debug -> Release for Prod
+ARG BUILD_CONFIGURATION=debug
+# ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["TicketAPI.csproj", "./"]
 RUN dotnet restore "TicketAPI.csproj"

@@ -14,6 +14,10 @@ public interface ITokenGenerator
 {
     public Task<string> GenerateToken(ApplicationUser user);
 }
+
+/// <summary>
+/// Used to generate auth tokens.
+/// </summary>
 public class JwtGenerator : ITokenGenerator
 {
     private readonly IConfiguration _configuration;
@@ -25,6 +29,12 @@ public class JwtGenerator : ITokenGenerator
         _userManager = userManager;
     }
 
+
+    /// <summary>
+    /// Creates a new auth token.
+    /// </summary>
+    /// <param name="user">The user of the token.</param>
+    /// <returns>The token.</returns>
     public async Task<string> GenerateToken(ApplicationUser user)
     {
         var claims = new List<Claim>
@@ -45,10 +55,10 @@ public class JwtGenerator : ITokenGenerator
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: _configuration["JwtSettings:Issuer"],
+            audience: _configuration["JwtSettings:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpireMinutes"])),
+            expires: DateTime.Now.AddMinutes(int.Parse(_configuration["JwtSettings:ExpireMinutes"])),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

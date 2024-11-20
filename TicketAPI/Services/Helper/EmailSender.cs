@@ -8,6 +8,9 @@ public interface IEmailSender
     Task SendEmailAsync(string email, string subject, string message);
 }
 
+/// <summary>
+/// Used to send emails.
+/// </summary>
 public class EmailSender : IEmailSender
 {
     private readonly IConfiguration _configuration;
@@ -22,6 +25,14 @@ public class EmailSender : IEmailSender
         client.EnableSsl = bool.Parse(emailSettings["EnableSsl"]);
     }
 
+
+    /// <summary>
+    /// Creates an email and sends it.
+    /// </summary>
+    /// <param name="email">The target of the mail.</param>
+    /// <param name="subject">The subject of the email.</param>
+    /// <param name="message">The content of the email.</param>
+    /// <returns></returns>
     public async Task SendEmailAsync(string email, string subject, string message)
     {
         var emailSettings = _configuration.GetSection("EmailSettings");

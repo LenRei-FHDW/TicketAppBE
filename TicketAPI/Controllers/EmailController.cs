@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Scoped;
 
 namespace TicketAPI.Controllers;
 
+/// <summary>
+/// This controller manages all email calls.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class EmailController: ControllerBase
@@ -16,6 +20,13 @@ public class EmailController: ControllerBase
         _emailService = emailService;
     }
 
+
+    /// <summary>
+    /// Called to confirms that the email is really owned by the caller.
+    /// </summary>
+    /// <param name="userId">Which user wants to confirm the mail.</param>
+    /// <param name="code">Code used to confirm the user.</param>
+    /// <returns>A response based on success or failure.</returns>
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string userId, string code)
     {
@@ -30,7 +41,12 @@ public class EmailController: ControllerBase
             return Ok("Email confirmed successfully.");
         return BadRequest("Email confirmation failed.");
     }
-    
+
+    /// <summary>
+    /// Resents the confirmation mail on call.
+    /// </summary>
+    /// <param name="model">Which mail should be resent</param>
+    /// <returns>A response based on success or failure.</returns>
     [HttpPost("resend-confirmation-email")]
     public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailModelDTO model)
     {

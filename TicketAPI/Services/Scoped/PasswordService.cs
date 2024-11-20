@@ -5,6 +5,9 @@ using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Services.Scoped;
 
+/// <summary>
+/// Manages password interactions.
+/// </summary>
 public class PasswordService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -17,6 +20,11 @@ public class PasswordService
         _emailHelper = emailHelper;
     }
 
+    /// <summary>
+    /// Sends a password reset mail if there is a matching user.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     public async Task<string> ForgotPassword(ForgotPasswordModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
@@ -29,6 +37,11 @@ public class PasswordService
         return "Password reset email sent. Please check your email.";
     }
 
+    /// <summary>
+    /// Resets the password if the token matches.
+    /// </summary>
+    /// <param name="model">The user email, token and new password.</param>
+    /// <returns>The success of the action.</returns>
     public async Task<bool> ResetPassword(ResetPasswordModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);

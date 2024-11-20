@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.Scoped;
 using TicketAPI.Services.DTO;
 
 namespace TicketAPI.Controllers
 {
-    
+    /// <summary>
+    /// This controller manages all authentification api calls.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -16,6 +19,12 @@ namespace TicketAPI.Controllers
             _authService = authService;
         }
         
+
+        /// <summary>
+        /// Response to a login call.
+        /// </summary>
+        /// <param name="model">Email and password of the login.</param>
+        /// <returns>A token if successfull.</returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModelDTO model)
         {
@@ -34,6 +43,11 @@ namespace TicketAPI.Controllers
             return Ok(new { token = result.Token });
         }
 
+        /// <summary>
+        /// Response to a register call.
+        /// </summary>
+        /// <param name="model">Full name, email and password used to register.</param>
+        /// <returns>The result of the request.</returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModelDTO model)
         {
@@ -50,10 +64,25 @@ namespace TicketAPI.Controllers
             }
             return BadRequest();
         }
+        
+		[Authorize(Roles = "Admin")]
+        [HttpPost("delete-user-admin")]
+        public async Task<IActionResult> DeleteUser()
+        {
+            var email = HttpContext.User?.FindFirst("Email")?.Value;
+            await _authService.DeleteUser(new ResendConfirmationEmailModelDTO(){Email = email});
+            return NoContent();
+        }
 
+        /// <summary>
+        /// Removes a user.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost("delete-user")]
         public async Task<IActionResult> DeleteUser([FromBody] ResendConfirmationEmailModelDTO model)
         {
+            // #TODO Secure the deletion
             await _authService.DeleteUser(model);
             return NoContent();
         }
