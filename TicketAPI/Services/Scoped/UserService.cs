@@ -4,7 +4,7 @@ using TicketAPI.Data.Repositories;
 
 namespace TicketAPI.Services.Scoped;
 
-interface IUserService
+public interface IUserService
 {
     Task<UserDataResultDTO?> GetUserDataAsync(string userId);
     Task<UserDataEditDTO?> UpdateUserDataAsync(string userId, UserDataEditDTO userDataDTO);
