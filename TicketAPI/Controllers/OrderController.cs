@@ -11,16 +11,8 @@ namespace TicketAPI.Controllers;
 /// This controller manages all calls used for ordering articles.
 /// </summary>
 [Route("api/[controller]")]
-public class OrderController : ControllerBase
+public class OrderController(OrderService _orderService, ILogger<OrderController> _logger) : ControllerBase
 {
-    private readonly OrderService _orderService;
-
-    public OrderController(OrderService orderService)
-    {
-        _orderService = orderService;
-    }
-
-
     /// <summary>
     /// Finds the current user and returns its orders.
     /// </summary>
@@ -29,6 +21,7 @@ public class OrderController : ControllerBase
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<OrderPreviewDTO>>> GetOrdersOfUser()
     {
+        _logger.LogTrace("GetOrdersOfUser request received.");
         var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
         return Ok(await _orderService.GetOrdersOfUsers(email));
     }
@@ -42,6 +35,7 @@ public class OrderController : ControllerBase
     [HttpGet("show/{id}")]
     public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
     {
+        _logger.LogTrace("GetOrder({Guid}) request received.", id);
         var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
         return Ok(await _orderService.GetOrder(email, id, false));
     }
@@ -55,6 +49,7 @@ public class OrderController : ControllerBase
     [HttpPost("create")]
     public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] IEnumerable<OrderItemPostDTO> orderItems)
     {
+        _logger.LogTrace("CreateOrder request received.");
         var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
         return Ok(await _orderService.CreateNewOrder(email, orderItems));
     }

@@ -1,20 +1,12 @@
-﻿namespace TicketAPI.Services.Helper;
+﻿using TicketAPI.Services.Scoped;
+
+namespace TicketAPI.Services.Helper;
 
 /// <summary>
 /// Generates email texts.
 /// </summary>
-public class EmailHelper
+public class EmailHelper(LinkGenerator _linkGenerator, IEmailSender _emailSender, ILogger<EmailHelper> _logger)
 {
-    private readonly LinkGenerator _linkGenerator;
-    private readonly IEmailSender _emailSender;
-
-    public EmailHelper(LinkGenerator linkGenerator, IEmailSender emailSender)
-    {
-        _linkGenerator = linkGenerator;
-        _emailSender = emailSender;
-    }
-
-
     /// <summary>
     /// Generates the text for a verification email.
     /// </summary>

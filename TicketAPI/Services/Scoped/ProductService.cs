@@ -10,17 +10,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages product interaction.
 /// </summary>
-public class ProductService
+public class ProductService(IRepository<Product, Guid> _repository, IMapper _mapper, ILogger<ProductService> _logger)
 {
-    private readonly IRepository<Product, Guid> _repository;
-    private readonly IMapper _mapper;
-
-    public ProductService(IRepository<Product, Guid> repository, IMapper mapper)
-    {
-        _repository = repository;
-        _mapper = mapper;
-    }
-
     /// <summary>
     /// Collects all products and returns them.
     /// </summary>

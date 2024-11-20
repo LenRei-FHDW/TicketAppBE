@@ -10,16 +10,8 @@ namespace TicketAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class ArticleController : ControllerBase
+public class ArticleController(ProductService _productService, ILogger<ArticleController> _logger) : ControllerBase
 {
-    private readonly ProductService _productService;
-
-    public ArticleController(ProductService productService)
-    {
-        _productService = productService;
-    }
-
-
     /// <summary>
     /// Lists all articles if called.
     /// </summary>
@@ -27,6 +19,7 @@ public class ArticleController : ControllerBase
     [HttpGet("listArticles")]
     public async Task<ActionResult<IEnumerable<ProductPreview>>> GetArticles()
     {
+        _logger.LogTrace("GetArticles request received.");
         return Ok(await _productService.GetAllProductsAsync());
     }
 
@@ -38,6 +31,7 @@ public class ArticleController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetArticleById(Guid id)
     {
+        _logger.LogTrace("GetArticleById request received.");
         var product = await _productService.GetArticleById(id);
         return Ok(product);
     }
@@ -51,6 +45,7 @@ public class ArticleController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> AddArticle([FromBody] ProductPostDTO product)
     {
+        _logger.LogTrace("AddArticle request received.");
         var created = await _productService.AddProduct(product);
         UriBuilder uriBuilder = new UriBuilder($"http://localhost:5000/api/Article/{created.ProductId}");
         return Created(uriBuilder.Uri, product);

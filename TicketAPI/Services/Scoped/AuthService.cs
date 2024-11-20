@@ -8,25 +8,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages Authentification.
 /// </summary>
-public class AuthService
+public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContextAccessor _httpContextAccessor, ITokenGenerator _tokenGenerator, ILogger<AuthService> _logger, EmailHelper _emailHelper)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly EmailHelper _emailHelper;
-    private readonly ITokenGenerator _tokenGenerator;
-    private readonly ILogger<AuthService> _logger;
-
-
-    public AuthService(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, ITokenGenerator tokenGenerator, ILogger<AuthService> logger, EmailHelper emailHelper)
-    {
-        _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
-        _tokenGenerator = tokenGenerator;
-        _logger = logger;
-        _emailHelper = emailHelper;
-    }
-
-
     /// <summary>
     /// Logs the user in and creates an auth token.
     /// </summary>
@@ -36,17 +19,25 @@ public class AuthService
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
 
-        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+        if (user == null)
         {
+            _logger.LogWarning("User with Email '{Email}' not found.", model.Email);
+            return null;
+        }
+        else if (!await _userManager.CheckPasswordAsync(user, model.Password))
+        {
+            _logger.LogWarning("Password incorrect.");
             return null;
         }
 
         if (!user.EmailConfirmed)
         {
+            _logger.LogWarning("The email has not been confirmed yet.");
             return new LoginResultDTO() { IsEmailConfirmed = false };
         }
 
         var token = await _tokenGenerator.GenerateToken(user);
+        _logger.LogInformation("Login for email '{Email}' successfull and token was generated.", model.Email);
         return new LoginResultDTO() { Token = token, IsEmailConfirmed = true };
     }
 
@@ -59,6 +50,7 @@ public class AuthService
     {
         if (model.Password != model.RepeatPassword)
         {
+            _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}'", model.Password, model.RepeatPassword);
             return new RegisterResultDTO(false, false);
         }
             
@@ -71,11 +63,12 @@ public class AuthService
             string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             HttpContext? context = _httpContextAccessor.HttpContext;
             _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id);
+            _logger.LogInformation("User '{FirstName} {LastName}' has been created and the verification mail has been send.", user.FirstName, user.LastName);
             return new RegisterResultDTO(true, true);
         }
         foreach (var error in result.Errors)
         {
-            Console.WriteLine($"Error: {error.Code} - {error.Description}");
+            _logger.LogError("Error: {Code} - {Description}", error.Code, error.Description);
         }
         return new RegisterResultDTO(true, false);
     }
