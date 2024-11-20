@@ -9,9 +9,16 @@ public interface IUserRepository
     Task UpdateUserAsync(ApplicationUser user);
 }
 
+/// <summary>
+/// Manages User Database interaction.
+/// </summary>
 public class UserRepository(TicketApiDbContext _context) : IUserRepository
 {
-    
+    /// <summary>
+    /// Call the Database with userId
+    /// </summary>
+    /// <param name="userId">UserId von User</param>
+    /// <returns>ApllicationUser & Address Model</returns>
     public async Task<ApplicationUser?> GetUserWithAddressAsync(string userId)
     {
         return await _context.Users
@@ -19,6 +26,10 @@ public class UserRepository(TicketApiDbContext _context) : IUserRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
+    /// <summary>
+    /// Update Application User in Database
+    /// </summary>
+    /// <param name="user">Application Modell</param>
     public async Task UpdateUserAsync(ApplicationUser user)
     {
         _context.Users.Update(user);
