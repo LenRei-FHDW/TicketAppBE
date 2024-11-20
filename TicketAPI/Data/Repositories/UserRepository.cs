@@ -17,8 +17,8 @@ public class UserRepository(TicketApiDbContext _context) : IUserRepository
     /// <summary>
     /// Call the Database with userId
     /// </summary>
-    /// <param name="userId">UserId von User</param>
-    /// <returns>ApllicationUser & Address Model</returns>
+    /// <param name="userId">UserId from User</param>
+    /// <returns>ApllicationUser Model with Address Model</returns>
     public async Task<ApplicationUser?> GetUserWithAddressAsync(string userId)
     {
         return await _context.Users
@@ -27,9 +27,9 @@ public class UserRepository(TicketApiDbContext _context) : IUserRepository
     }
 
     /// <summary>
-    /// Update Application User in Database
+    /// Update ApplicationUser in Databse
     /// </summary>
-    /// <param name="user">Application Modell</param>
+    /// <param name="user">Application Model</param>
     public async Task UpdateUserAsync(ApplicationUser user)
     {
         _context.Users.Update(user);
