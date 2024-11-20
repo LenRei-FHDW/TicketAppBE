@@ -10,8 +10,16 @@ public interface IUserService
     Task<UserDataEditDTO?> UpdateUserDataAsync(string userId, UserDataEditDTO userDataDTO);
 }
 
+/// <summary>
+/// Manages UserData.
+/// </summary>
 public class UserService(IUserRepository _userRepository) : IUserService
 {
+    /// <summary>
+    /// Call the Database and maps the result to UserDataResultDTO
+    /// </summary>
+    /// <param name="userId">UserId von User</param>
+    /// <returns>ApplicationUserId, FirstName, LastName, Street, City, Zip for User</returns>
     public async Task<UserDataResultDTO?> GetUserDataAsync(string userId)
     {
         var user = await _userRepository.GetUserWithAddressAsync(userId);
@@ -29,6 +37,12 @@ public class UserService(IUserRepository _userRepository) : IUserService
         };
     }
 
+    /// <summary>
+    /// maps UserDataEditDTO to DatabseModels and Update Database
+    /// </summary>
+    /// <param name="userId">UserId von User</param>
+    /// <param name="userDataDTO">ApplicationUserId, FirstName, LastName, Street, City, Zip</param>
+    /// <returns>ApplicationUserId, FirstName, LastName, Street, City, Zip for User</returns>
     public async Task<UserDataEditDTO?> UpdateUserDataAsync(string userId, UserDataEditDTO userDataDTO)
     {
         var user = await _userRepository.GetUserWithAddressAsync(userId);
@@ -37,7 +51,7 @@ public class UserService(IUserRepository _userRepository) : IUserService
 
         user.FirstName = userDataDTO.FirstName;
         user.LastName = userDataDTO.LastName;
-
+        
         if (user.Addresse == null)
         {
             user.Addresse = new Address

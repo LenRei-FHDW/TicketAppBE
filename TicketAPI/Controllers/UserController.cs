@@ -9,12 +9,17 @@ using TicketAPI.Services.Scoped;
 
 namespace TicketAPI.Controllers
 {
+    /// <summary>
+    /// This controller manages all user api calls.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController(UserManager<ApplicationUser> _userManager, IUserService _userService) : ControllerBase
     {
-
-
+        /// <summary>
+        /// Response to authorized user with his data
+        /// </summary>
+        /// <returns>userData from the User</returns>
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<UserDataResultDTO>> GetUserData()
@@ -30,6 +35,11 @@ namespace TicketAPI.Controllers
             return Ok(userData);
         }
 
+        /// <summary>
+        /// Response to authorized user with changes userData
+        /// </summary>
+        /// <param name="userDataDTO">ApplicationUserId, FirstName, LastName, Street, City, Zip for updates data</param>
+        /// <returns>Updates UserData</returns>
         [HttpPut]
         [Authorize]
         public async Task<ActionResult<UserDataEditDTO>> PutUserData([FromBody] UserDataEditDTO userDataDTO)
