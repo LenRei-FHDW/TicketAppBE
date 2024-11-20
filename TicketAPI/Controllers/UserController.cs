@@ -11,16 +11,8 @@ namespace TicketAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(UserManager<ApplicationUser> _userManager, IUserService _userService) : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IUserService _userService;
-
-        public UserController(UserManager<ApplicationUser> userManager, IUserService userService)
-        {
-            _userManager = userManager;
-            _userService = userService;
-        }
 
 
         [HttpGet]

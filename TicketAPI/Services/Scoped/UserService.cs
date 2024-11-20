@@ -10,14 +10,8 @@ public interface IUserService
     Task<UserDataEditDTO?> UpdateUserDataAsync(string userId, UserDataEditDTO userDataDTO);
 }
 
-public class UserService : IUserService
+public class UserService(IUserRepository _userRepository) : IUserService
 {
-    private readonly IUserRepository _userRepository;
-
-    public UserService(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
     public async Task<UserDataResultDTO?> GetUserDataAsync(string userId)
     {
         var user = await _userRepository.GetUserWithAddressAsync(userId);

@@ -9,14 +9,8 @@ public interface IUserRepository
     Task UpdateUserAsync(ApplicationUser user);
 }
 
-public class UserRepository : IUserRepository
+public class UserRepository(TicketApiDbContext _context) : IUserRepository
 {
-    private readonly TicketApiDbContext _context;
-
-    public UserRepository(TicketApiDbContext context)
-    {
-        _context = context;
-    }
     
     public async Task<ApplicationUser?> GetUserWithAddressAsync(string userId)
     {
