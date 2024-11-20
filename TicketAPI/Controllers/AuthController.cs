@@ -50,7 +50,7 @@ namespace TicketAPI.Controllers
             RegisterResultDTO result = await _authService.Register(model);
             if (!result.SamePassword)
             {
-                _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}'", model.Password, model.RepeatPassword);
+                _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}' do not match.", model.Password, model.RepeatPassword);
                 return BadRequest("Passwords do not match.");
             }
 

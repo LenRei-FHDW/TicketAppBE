@@ -50,7 +50,7 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
     {
         if (model.Password != model.RepeatPassword)
         {
-            _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}'", model.Password, model.RepeatPassword);
+            _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}' do not match.", model.Password, model.RepeatPassword);
             return new RegisterResultDTO(false, false);
         }
             
