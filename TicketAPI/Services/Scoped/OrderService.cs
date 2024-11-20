@@ -47,7 +47,7 @@ public class OrderService(OrderRepository _orderRepository, IRepository<OrderIte
     }
 
     /// <summary>
-    /// Establishes a new order overthrowing the old corrupt system.
+    /// Creates a new order for the user.
     /// </summary>
     /// <param name="email">Email of the user the order is created for.</param>
     /// <param name="orderItemsDtos">Details of the order item (productId, name, quantity, singleprice, totalprice).</param>
