@@ -10,9 +10,10 @@ public class ApplicationUser : IdentityUser
     public string LastName { get; set; } = String.Empty;
    
     [JsonIgnore] 
-    public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public Address Addresse { get; set; }
     [JsonIgnore] 
-    public ICollection<Address> Addresses { get; set; } = new List<Address>();
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
+    
     [JsonIgnore] 
     public ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = new List<ShoppingCartItem>();
 }
