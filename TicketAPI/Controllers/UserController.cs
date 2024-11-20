@@ -1,6 +1,3 @@
-
-
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -79,10 +76,26 @@ namespace TicketAPI.Controllers
             
             user.FirstName = userDataDTO.FirstName;
             user.LastName = userDataDTO.LastName;
-            user.Addresse.ApplicationUserId = userId;
-            user.Addresse.Street = userDataDTO.Street;
-            user.Addresse.City = userDataDTO.City;
-            user.Addresse.Zip = userDataDTO.Zip;
+            
+            if (user.Addresse == null)
+            {
+                user.Addresse = new Address
+                {
+                    ApplicationUserId = userId,
+                    Street = userDataDTO.Street,
+                    City = userDataDTO.City,
+                    Zip = userDataDTO.Zip
+                };
+                
+                _context.Entry(user.Addresse).State = EntityState.Added;
+            }
+            else
+            {
+                user.Addresse.Street = userDataDTO.Street;
+                user.Addresse.City = userDataDTO.City;
+                user.Addresse.Zip = userDataDTO.Zip;
+                _context.Entry(user.Addresse).State = EntityState.Modified;
+            }
             
             _context.Entry(user).State = EntityState.Modified;
 
@@ -97,7 +110,7 @@ namespace TicketAPI.Controllers
                 throw;
             }
             
-            return userDataDTO;
+            return Ok(userDataDTO);
             
         }
     }
