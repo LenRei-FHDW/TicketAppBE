@@ -48,7 +48,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogTrace($"productDTO is invalid: {ModelState.ToString()}");
+            _logger.LogTrace("productDTO is invalid: {ModelState}", ModelState.ToString());
             return BadRequest(ModelState);
         } 
         
