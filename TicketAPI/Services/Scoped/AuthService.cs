@@ -62,7 +62,7 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
             await _userManager.AddToRoleAsync(user, "User");
             string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             HttpContext? context = _httpContextAccessor.HttpContext;
-            _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id);
+            _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id, user.FirstName);
             _logger.LogInformation("User '{FirstName} {LastName}' has been created and the verification mail has been send.", user.FirstName, user.LastName);
             return new RegisterResultDTO(true, true);
         }

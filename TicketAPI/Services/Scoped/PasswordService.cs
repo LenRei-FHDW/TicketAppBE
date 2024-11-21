@@ -21,7 +21,7 @@ public class PasswordService(UserManager<ApplicationUser> _userManager, IHttpCon
         if (user != null && await _userManager.IsEmailConfirmedAsync(user))
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            _emailHelper.GenerateResetEmail(token, user.Email, user.Id);
+            _emailHelper.GenerateResetEmail(token, user.Email, user.Id, user.FirstName);
             _logger.LogInformation("Password reset email has been sent to '{Email}'.", user.Email);
         }
         return "If your email is registered, you will receive a password reset link.";
