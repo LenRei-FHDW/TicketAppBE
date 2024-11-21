@@ -48,14 +48,14 @@ public class ProductController(IFileService _fileService, ProductService _produc
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogTrace("productDTO is invalid: {ModelState}", ModelState.ToString());
+            _logger.LogWarning("productDTO is invalid: {ModelState}", ModelState.ToString());
             return BadRequest(ModelState);
         } 
         
         var userId = _userManager.GetUserId(User);
         if (userId == null)
         {
-            _logger.LogTrace("UserId is null");
+            _logger.LogWarning("UserId is null");
             return Unauthorized();
         }
         
@@ -64,7 +64,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
         {
             if (!_productService.CheckImageSize(productDTO.ImageFile))
             {
-                _logger.LogTrace("Image file size is invalid");
+                _logger.LogWarning("Image file size is invalid");
                 return BadRequest(); 
             }
                 
@@ -88,14 +88,14 @@ public class ProductController(IFileService _fileService, ProductService _produc
     {
         if (id != productDTO.ProductId)
         {
-            _logger.LogTrace("Id not match with product");
+            _logger.LogWarning("Id not match with product");
             return BadRequest();
         }
         
         var existingProduct = await _productService.GetProductById(productDTO.ProductId);
         if (existingProduct == null)
         {
-            _logger.LogTrace("Product not found");
+            _logger.LogWarning("Product not found with ID: {productID}", productDTO.ProductId);
             return NotFound();
         }
             
@@ -104,7 +104,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
         {
             if (!_productService.CheckImageSize(productDTO.ImageFile))
             {
-                _logger.LogTrace("Product not found");
+                _logger.LogWarning("Image file size is invalid\"");
                 return BadRequest();
             }
                 
@@ -112,7 +112,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
             var newImageName = await _fileService.SaveFileAsync(productDTO.ImageFile);
             if (string.IsNullOrEmpty(newImageName))
             {
-                _logger.LogTrace("New Image Name is empty");
+                _logger.LogWarning("New Image Name is empty");
                 return BadRequest();
             }
                 

@@ -55,7 +55,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
     {
         if (string.IsNullOrEmpty(fileNameWithExtension))
         {
-            _logger.LogTrace("File Name with Extension is Null");
+            _logger.LogWarning("File Name with Extension is Null");
             throw new ArgumentNullException(nameof(fileNameWithExtension));
         }
         
@@ -64,7 +64,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
 
         if (!File.Exists(path))
         {
-            _logger.LogTrace($"File {fileNameWithExtension} does not exist.");
+            _logger.LogWarning("File {fileNameWithExtension} does not exist.", fileNameWithExtension);
             throw new ArgumentException($"File {fileNameWithExtension} does not exist.");
         }
         File.Delete(path);
