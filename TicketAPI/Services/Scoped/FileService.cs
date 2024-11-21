@@ -20,7 +20,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
     {
         if (imageFile is null)
         {
-            _logger.LogTrace("Image File is Null");
+            _logger.LogWarning("Image File is Null");
             throw new ArgumentNullException(nameof(imageFile));
         }
         
@@ -36,7 +36,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
         var ext = Path.GetExtension(imageFile.FileName);
         if (!allowedFileExtensions.Contains(ext))
         {
-            _logger.LogTrace("Wrong Image File Extension");
+            _logger.LogWarning("Wrong Image File Extension. Extension is: {ext} allowed: {allowedFileExtensions}", ext, allowedFileExtensions);
             throw new ArgumentException($"Only {string.Join(",", allowedFileExtensions)} are allowed.");
         }
         
