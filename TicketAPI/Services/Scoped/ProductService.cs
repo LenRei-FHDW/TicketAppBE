@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using NuGet.Protocol.Core.Types;
 using TicketAPI.Data;
 using TicketAPI.Data.Models;
@@ -10,16 +11,16 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages product interaction.
 /// </summary>
-public class ProductService(IRepository<Product, Guid> _repository, IMapper _mapper, ILogger<ProductService> _logger)
+public class ProductService(IRepository<Product, Guid> _repository, IProductRepository _productRepository, IMapper _mapper, UserManager<ApplicationUser> _userManager, TicketApiDbContext _context, ILogger<ProductService> _logger)
 {
     /// <summary>
     /// Collects all products and returns them.
     /// </summary>
     /// <returns>A List with all products (id, name, price)</returns>
-    public async Task<IEnumerable<ProductPreview>> GetAllProductsAsync()
+    public async Task<IEnumerable<ProductPreviewDTO>> GetAllProductsAsync()
     {
-        var productList = await _repository.GetAllAsync();
-        return _mapper.Map<IEnumerable<ProductPreview>>(productList);
+        var productList = await _productRepository.GetProductsAsync();
+        return _mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
     }
 
     /// <summary>
@@ -27,7 +28,7 @@ public class ProductService(IRepository<Product, Guid> _repository, IMapper _map
     /// </summary>
     /// <param name="id">Id of the wanted product.</param>
     /// <returns>The specified product.</returns>
-    public async Task<Product?> GetArticleById(Guid id)
+    public async Task<Product?> GetProductById(Guid id)
     {
         return await _repository.GetByIdAsync(id);
     }
@@ -35,13 +36,69 @@ public class ProductService(IRepository<Product, Guid> _repository, IMapper _map
     /// <summary>
     /// Adds a new product.
     /// </summary>
-    /// <param name="product">The product to be added.</param>
+    /// <param name="productDTO">The productDTO to be added.</param>
+    /// <param name="userId">UserId from User</param>
+    /// <param name="ImageName">Name of Image</param>
     /// <returns>The newly added product.</returns>
-    public async Task<ProductDTO> AddProduct(ProductPostDTO product)
+    public async Task<ProductDTO> AddProduct(ProductCreateDTO productDTO, string userId, string? ImageName)
     {
-        var productEntity = _mapper.Map<Product>(product);
+        var productEntity = new Product
+        {
+            Name = productDTO.Name,
+            Description = productDTO.Description,
+            Price = productDTO.Price,
+            ImageName = ImageName,
+            CreaterId = userId
+        };
+        
+        //var productEntity = _mapper.Map<Product>(productDTO);
         var result =  await _repository.AddAsync(productEntity);
         
         return _mapper.Map<ProductDTO>(result);
+    }
+
+    /// <summary>
+    /// Update product.
+    /// </summary>
+    /// <param name="productDTO">The productDTO to be update.</param>
+    /// <returns>The updates ProductDTO</returns>
+    public async Task<ProductDTO?> EditProduct(ProductEditDTO productDTO)
+    {
+        var produkt = await _repository.GetByIdAsync(productDTO.ProductId);
+        
+        produkt.Name = productDTO.Name;
+        produkt.Description = productDTO.Description;
+        produkt.Price = productDTO.Price;
+        produkt.ImageName = productDTO.ImageName;
+        
+        var result = await _repository.UpdateAsync(produkt);
+        
+        return _mapper.Map<ProductDTO>(produkt);
+    }
+
+    /// <summary>
+    /// Set DeleteValue in Produkt
+    /// </summary>
+    /// <param name="productId">Id of the Product</param>
+    public async Task DeleteProduct(Guid productId)
+    {
+        var existingProduct = await _repository.GetByIdAsync(productId);
+        
+        existingProduct.IsDeleted = true;
+        
+        var result = await _repository.UpdateAsync(existingProduct);
+    }
+
+    /// <summary>
+    /// Check Image Size
+    /// </summary>
+    /// <param name="file">Image from Product</param>
+    /// <returns>A response based on success or failure.</returns>
+    public bool CheckImageSize(IFormFile? file)
+    {
+        if (file != null && file.Length > 1 * 1024 * 1024)
+            return false;
+        
+        return true;
     }
 }

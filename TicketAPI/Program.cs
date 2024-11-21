@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Serilog;
@@ -27,14 +28,16 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
+builder.Services.AddTransient<IFileService, FileService>();
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
 builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
 builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<OrderRepository>();
 
 // DbContext
@@ -109,6 +112,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+    RequestPath = "/api/images"
+});
 
 app.UseExceptionHandler(errorApp =>
     errorApp.Run(async context =>
