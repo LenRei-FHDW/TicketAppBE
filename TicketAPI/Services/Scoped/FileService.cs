@@ -9,7 +9,7 @@ public interface IFileService
 /// <summary>
 /// Manages File interaction.
 /// </summary>
-public class FileService(IWebHostEnvironment environment, IConfiguration configuration) : IFileService
+public class FileService(IWebHostEnvironment environment, IConfiguration configuration, ILogger<FileService> _logger) : IFileService
 {
     /// <summary>
     /// Save ImageFile in Upload
@@ -20,6 +20,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
     {
         if (imageFile is null)
         {
+            _logger.LogTrace("Image File is Null");
             throw new ArgumentNullException(nameof(imageFile));
         }
         
@@ -35,6 +36,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
         var ext = Path.GetExtension(imageFile.FileName);
         if (!allowedFileExtensions.Contains(ext))
         {
+            _logger.LogTrace("Wrong Image File Extension");
             throw new ArgumentException($"Only {string.Join(",", allowedFileExtensions)} are allowed.");
         }
         
@@ -53,6 +55,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
     {
         if (string.IsNullOrEmpty(fileNameWithExtension))
         {
+            _logger.LogTrace("File Name with Extension is Null");
             throw new ArgumentNullException(nameof(fileNameWithExtension));
         }
         
@@ -61,6 +64,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
 
         if (!File.Exists(path))
         {
+            _logger.LogTrace($"File {fileNameWithExtension} does not exist.");
             throw new ArgumentException($"File {fileNameWithExtension} does not exist.");
         }
         File.Delete(path);

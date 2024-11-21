@@ -12,7 +12,7 @@ namespace TicketAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class ProductController(IFileService _fileService, ProductService _productService, UserManager<ApplicationUser> _userManager) : ControllerBase
+public class ProductController(IFileService _fileService, ProductService _productService, UserManager<ApplicationUser> _userManager, ILogger<ProductController> _logger) : ControllerBase
 {
 
     /// <summary>
@@ -46,18 +46,28 @@ public class ProductController(IFileService _fileService, ProductService _produc
     [HttpPost]
     public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO productDTO)
     {
-        if (!ModelState.IsValid) 
+        if (!ModelState.IsValid)
+        {
+            _logger.LogTrace($"productDTO is invalid: {ModelState.ToString()}");
             return BadRequest(ModelState);
+        } 
         
         var userId = _userManager.GetUserId(User);
         if (userId == null)
+        {
+            _logger.LogTrace("UserId is null");
             return Unauthorized();
+        }
         
         var imageName = string.Empty;
         if (productDTO.ImageFile != null)
         {
-            if(!_productService.CheckImageSize(productDTO.ImageFile))
+            if (!_productService.CheckImageSize(productDTO.ImageFile))
+            {
+                _logger.LogTrace("Image file size is invalid");
                 return BadRequest(); 
+            }
+                
             
             imageName = await _fileService.SaveFileAsync(productDTO.ImageFile);
         }
@@ -77,20 +87,35 @@ public class ProductController(IFileService _fileService, ProductService _produc
     public async Task<IActionResult> UpdateProduct(Guid id, [FromForm] ProductEditDTO productDTO)
     {
         if (id != productDTO.ProductId)
+        {
+            _logger.LogTrace("Id not match with product");
             return BadRequest();
+        }
         
         var existingProduct = await _productService.GetProductById(productDTO.ProductId);
         if (existingProduct == null)
+        {
+            _logger.LogTrace("Product not found");
             return NotFound();
+        }
+            
         
         if (productDTO.ImageFile != null)
         {
-            if(!_productService.CheckImageSize(productDTO.ImageFile))
+            if (!_productService.CheckImageSize(productDTO.ImageFile))
+            {
+                _logger.LogTrace("Product not found");
                 return BadRequest();
+            }
+                
             
             var newImageName = await _fileService.SaveFileAsync(productDTO.ImageFile);
             if (string.IsNullOrEmpty(newImageName))
+            {
+                _logger.LogTrace("New Image Name is empty");
                 return BadRequest();
+            }
+                
             
             if(!string.IsNullOrEmpty(productDTO.ImageName))
                 _fileService.DeleteFile(productDTO.ImageName);
