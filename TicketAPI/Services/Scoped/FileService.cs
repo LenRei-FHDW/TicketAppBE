@@ -2,13 +2,21 @@ namespace TicketAPI.Services.Scoped;
 
 public interface IFileService
 {
-    Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions);
+    Task<string> SaveFileAsync(IFormFile imageFile);
     void DeleteFile(string fileNameWithExtension);
 }
 
-public class FileService(IWebHostEnvironment environment) : IFileService
+/// <summary>
+/// Manages File interaction.
+/// </summary>
+public class FileService(IWebHostEnvironment environment, IConfiguration configuration) : IFileService
 {
-    public async Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions)
+    /// <summary>
+    /// Save ImageFile in Upload
+    /// </summary>
+    /// <param name="imageFile">FileData from Form</param>
+    /// <returns>Image File Name</returns>
+    public async Task<string> SaveFileAsync(IFormFile imageFile)
     {
         if (imageFile is null)
         {
@@ -16,13 +24,14 @@ public class FileService(IWebHostEnvironment environment) : IFileService
         }
         
         var contentPath = environment.ContentRootPath;
-        var path = Path.Combine(contentPath, "Images");
+        var path = Path.Combine(contentPath, "Uploads");
 
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);   
         }
-        
+
+        string[] allowedFileExtensions = configuration.GetSection("ImageUpload:AllowedFileExtentions").Get<string[]>();
         var ext = Path.GetExtension(imageFile.FileName);
         if (!allowedFileExtensions.Contains(ext))
         {
@@ -36,6 +45,10 @@ public class FileService(IWebHostEnvironment environment) : IFileService
         return fileName;
     }
 
+    /// <summary>
+    /// Delete ImageFile in Upload
+    /// </summary>
+    /// <param name="fileNameWithExtension">FileName of Image with Extension</param>
     public void DeleteFile(string fileNameWithExtension)
     {
         if (string.IsNullOrEmpty(fileNameWithExtension))
@@ -44,7 +57,7 @@ public class FileService(IWebHostEnvironment environment) : IFileService
         }
         
         var contentPath = environment.ContentRootPath;
-        var path = Path.Combine(contentPath, "Images", fileNameWithExtension);
+        var path = Path.Combine(contentPath, "Uploads", fileNameWithExtension);
 
         if (!File.Exists(path))
         {

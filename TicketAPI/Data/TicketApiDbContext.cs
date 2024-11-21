@@ -29,8 +29,7 @@ public class TicketApiDbContext : IdentityDbContext<ApplicationUser>
                 Price = 19.99m,
                 ImageName = "sample1.jpg",
                 IsDeleted = false,
-                CreaterId = "user-123",
-                Rating = 4.5m
+                CreaterId = "user-123"
             },
             new Product
             {
@@ -40,8 +39,7 @@ public class TicketApiDbContext : IdentityDbContext<ApplicationUser>
                 Price = 29.99m,
                 ImageName = "sample2.jpg",
                 IsDeleted = false,
-                CreaterId = "user-456",
-                Rating = 4.0m
+                CreaterId = "user-456"
             }
         );
         base.OnModelCreating(modelBuilder);

@@ -1,6 +1,6 @@
 ﻿namespace TicketAPI.Services.DTO;
 
-public class ProductPostDTO
+public class ProductCreateDTO
 {
     public string Name {get; set;}
     
@@ -8,5 +8,5 @@ public class ProductPostDTO
     
     public decimal Price {get; set;}
     
-    public decimal Rating {get; set;}
+    public IFormFile? ImageFile {get; set;}
 }

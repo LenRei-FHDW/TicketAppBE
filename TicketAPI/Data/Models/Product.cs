@@ -21,6 +21,4 @@ public class Product
     public bool IsDeleted { get; set; } = false;
     
     public string CreaterId { get; set; }
-    
-    public decimal Rating {get; set;}
 }

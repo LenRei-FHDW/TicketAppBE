@@ -9,5 +9,5 @@ public class ProductDTO{
     
     public decimal Price {get; set;}
     
-    public decimal Rating {get; set;}
+    public string ImageName {get; set;} 
 }
