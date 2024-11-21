@@ -10,16 +10,8 @@ namespace TicketAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(AuthService _authService, ILogger<AuthController> _logger) : ControllerBase
     {
-        private readonly AuthService _authService;
-        
-        public AuthController( AuthService authService)
-        {
-            _authService = authService;
-        }
-        
-
         /// <summary>
         /// Response to a login call.
         /// </summary>
@@ -28,15 +20,18 @@ namespace TicketAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModelDTO model)
         {
+            _logger.LogTrace("Login request received.");
             var result = await _authService.LoginAsync(model);
 
             if (result == null)
             {
+                _logger.LogWarning("Invalid login attempt.");
                 return Unauthorized("Invalid login attempt.");
             }
 
             if (!result.IsEmailConfirmed)
             {
+                _logger.LogWarning("Unconfirmed email '{Email}'", model.Email);
                 return BadRequest("Email not confirmed. Please check your email to confirm your account.");
             }
 
@@ -51,9 +46,11 @@ namespace TicketAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModelDTO model)
         {
+            _logger.LogTrace("Register request received.");
             RegisterResultDTO result = await _authService.Register(model);
             if (!result.SamePassword)
             {
+                _logger.LogWarning("Password '{Password}' and repeat password '{RepeatPassword}' do not match.", model.Password, model.RepeatPassword);
                 return BadRequest("Passwords do not match.");
             }
 
@@ -69,6 +66,7 @@ namespace TicketAPI.Controllers
         [HttpPost("delete-user-admin")]
         public async Task<IActionResult> DeleteUser()
         {
+            _logger.LogTrace("DeleteUser request received.");
             var email = HttpContext.User?.FindFirst("Email")?.Value;
             await _authService.DeleteUser(new ResendConfirmationEmailModelDTO(){Email = email});
             return NoContent();

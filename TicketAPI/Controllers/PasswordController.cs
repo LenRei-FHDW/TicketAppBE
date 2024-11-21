@@ -10,17 +10,8 @@ namespace TicketAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class PasswordController : ControllerBase
+public class PasswordController(PasswordService _passwordService, ILogger<PasswordController> _logger) : ControllerBase
 {
-
-    private readonly PasswordService _passwordService;
-
-    public PasswordController(PasswordService passwordService)
-    {
-        _passwordService = passwordService;
-    }
-
-
     /// <summary>
     /// Sends a mail with a reset link.
     /// </summary>
@@ -29,6 +20,7 @@ public class PasswordController : ControllerBase
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModelDTO model)
     {
+        _logger.LogTrace("ForgotPassword request received.");
         return Ok(await _passwordService.ForgotPassword(model));
     }
 
@@ -40,6 +32,7 @@ public class PasswordController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModelDTO model)
     {
+        _logger.LogTrace("ResetPassword request received.");
         bool result = await _passwordService.ResetPassword(model);
         return result ? Ok() : BadRequest();
     }

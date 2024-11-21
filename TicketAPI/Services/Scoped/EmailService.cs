@@ -8,19 +8,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Sends emails to the target.
 /// </summary>
-public class EmailService
+public class EmailService(UserManager<ApplicationUser> _userManager, IHttpContextAccessor _httpContextAccessor, ILogger<EmailService> _logger, EmailHelper _emailHelper)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly EmailHelper _emailHelper;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public EmailService(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, EmailHelper emailHelper)
-    {
-        _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
-        _emailHelper = emailHelper;
-    }
-
     /// <summary>
     /// Checks if the used code matches the user.
     /// </summary>
@@ -30,16 +19,26 @@ public class EmailService
     public async Task<ConfirmEmailResultDTO> ConfirmEmail(string userId, string code)
     {
         if (userId == null || code == null)
+        {
+            _logger.LogWarning("UserId or code received was empty.");
             return new ConfirmEmailResultDTO(false, false, false);
+        }
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
+        {
+            _logger.LogWarning("User with id '{UserId}' not found.", userId);
             return new ConfirmEmailResultDTO(true, false, false);
+        }
 
         var result = await _userManager.ConfirmEmailAsync(user, code);
         if (result.Succeeded)
+        {
+            _logger.LogInformation("Confirmation mail has been sent to '{Email}'.", user.Email);
             return new ConfirmEmailResultDTO(true, true, true);
+        }
 
+        _logger.LogError("Failed to send confirmation mail.");
         return new ConfirmEmailResultDTO(true, true, false);
     }
 
@@ -53,17 +52,20 @@ public class EmailService
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
+            _logger.LogWarning("User with email '{Email}' not found.", model.Email);
             return new ConfirmEmailResultDTO(false, false);
         }
 
         if (user.EmailConfirmed)
         {
+            _logger.LogInformation("The email '{Email}' is already confirmed.", model.Email);
             return new ConfirmEmailResultDTO(true, true);
         }
         
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         HttpContext? context = _httpContextAccessor.HttpContext;
         _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id);
+        _logger.LogInformation("Verification email with a new confirmation token has been send to '{Email}'", model.Email);
         return new ConfirmEmailResultDTO(true, false);
     }
 }

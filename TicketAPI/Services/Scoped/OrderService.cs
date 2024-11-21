@@ -13,9 +13,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages all actions of ordering.
 /// </summary>
-public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper){
-    
-
+public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, ILogger<OrderService> _logger, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper)
+{
     /// <summary>
     /// Collects all orders of the user with this email. 
     /// </summary>
@@ -43,6 +42,7 @@ public class OrderService(OrderRepository _orderRepository, IRepository<OrderIte
         {
             return _mapper.Map<OrderDTO>(order);
         }
+        _logger.LogInformation("The user is not authorized to access this order.");
         throw new ForbiddenException();
     }
 
@@ -67,6 +67,7 @@ public class OrderService(OrderRepository _orderRepository, IRepository<OrderIte
         await _orderItemRepository.AddRangeAsync(orderItems);
         var orderEntity = await _orderRepository.GetByIdAsynchLoadEager(order.OrderId);
         var orderDTO = _mapper.Map<OrderDTO>(orderEntity);
+        _logger.LogInformation("New order for email '{Email}' created.", email);
         return orderDTO;
     }
 }

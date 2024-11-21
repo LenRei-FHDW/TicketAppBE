@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
 using NuGet.Protocol.Core.Types;
 using TicketAPI.Data;
 using TicketAPI.Data.Models;
@@ -14,7 +11,7 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages product interaction.
 /// </summary>
-public class ProductService(IRepository<Product, Guid> _repository, IProductRepository _productRepository, IMapper _mapper, UserManager<ApplicationUser> _userManager, TicketApiDbContext _context)
+public class ProductService(IRepository<Product, Guid> _repository, IProductRepository _productRepository, IMapper _mapper, UserManager<ApplicationUser> _userManager, TicketApiDbContext _context, ILogger<ProductService> _logger)
 {
     /// <summary>
     /// Collects all products and returns them.
@@ -22,7 +19,6 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <returns>A List with all products (id, name, price)</returns>
     public async Task<IEnumerable<ProductPreviewDTO>> GetAllProductsAsync()
     {
-        //var productList = await _repository.GetAllAsync();
         var productList = await _productRepository.GetProductsAsync();
         return _mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
     }

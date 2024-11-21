@@ -8,18 +8,8 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages password interactions.
 /// </summary>
-public class PasswordService
+public class PasswordService(UserManager<ApplicationUser> _userManager, IHttpContextAccessor _httpContextAccessor, ILogger<PasswordService> _logger, EmailHelper _emailHelper)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly EmailHelper _emailHelper;
-
-
-    public PasswordService(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, EmailHelper emailHelper)
-    {
-        _userManager = userManager;
-        _emailHelper = emailHelper;
-    }
-
     /// <summary>
     /// Sends a password reset mail if there is a matching user.
     /// </summary>
@@ -28,13 +18,13 @@ public class PasswordService
     public async Task<string> ForgotPassword(ForgotPasswordModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+        if (user != null && await _userManager.IsEmailConfirmedAsync(user))
         {
-            return "If your email is registered, you will receive a password reset link.";
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            _emailHelper.GenerateResetEmail(token, user.Email, user.Id);
+            _logger.LogInformation("Password reset email has been sent to '{Email}'.", user.Email);
         }
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        _emailHelper.GenerateResetEmail(token, user.Email, user.Id);
-        return "Password reset email sent. Please check your email.";
+        return "If your email is registered, you will receive a password reset link.";
     }
 
     /// <summary>

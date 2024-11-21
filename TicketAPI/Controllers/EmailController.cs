@@ -11,16 +11,8 @@ namespace TicketAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class EmailController: ControllerBase
+public class EmailController(EmailService _emailService, ILogger<EmailController> _logger) : ControllerBase
 {
-    private readonly EmailService _emailService;
-
-    public EmailController(EmailService emailService)
-    {
-        _emailService = emailService;
-    }
-
-
     /// <summary>
     /// Called to confirms that the email is really owned by the caller.
     /// </summary>
@@ -30,6 +22,7 @@ public class EmailController: ControllerBase
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string userId, string code)
     {
+        _logger.LogTrace("ConfirmEmail request received.");
         var result = await _emailService.ConfirmEmail(userId, code);
         if (result.EmailConfirmed)
             return Ok("Email confirmed successfully.");
@@ -50,6 +43,7 @@ public class EmailController: ControllerBase
     [HttpPost("resend-confirmation-email")]
     public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailModelDTO model)
     {
+        _logger.LogTrace("ResendConfirmationEmail request received.");
         ConfirmEmailResultDTO result = await _emailService.ResendConfirmationEmail(model);
         if (!result.UserExists)
         {
