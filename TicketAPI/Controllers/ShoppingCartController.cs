@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Data.Models;
+using TicketAPI.Data.Models.DTO;
 using TicketAPI.Services.Scoped;
 
 namespace TicketAPI.Controllers
@@ -11,7 +12,7 @@ namespace TicketAPI.Controllers
     [ApiController]
     public class ShoppingCartController(
         UserManager<ApplicationUser> userManager, 
-        IShoppingCartService shoppingCartService) 
+        ShoppingCartService shoppingCartService) 
         : ControllerBase
     {
         // GET: api/Cart

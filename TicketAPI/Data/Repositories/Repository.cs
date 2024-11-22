@@ -64,6 +64,12 @@ public class Repository<TEntity,TIdentifier>: IRepository<TEntity, TIdentifier> 
             throw new KeyNotFoundException();
         }
     }
+    
+    public async Task DeleteEntityAsync(TEntity entity)
+    {
+        _dbSet.Remove(entity);
+        await _context.SaveChangesAsync();
+    }
 
     public async Task<bool> ExistsAsync(TIdentifier id)
     {
