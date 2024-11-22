@@ -40,10 +40,8 @@ public class Repository<TEntity,TIdentifier>: IRepository<TEntity, TIdentifier> 
 
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        //var entry = _dbSet.Update(entity);
         _context.Entry(entity).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-        //return entry.Entity;
         return entity;
     }
 
