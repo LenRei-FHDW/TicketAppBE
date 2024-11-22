@@ -28,9 +28,10 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// </summary>
     /// <param name="id">Id of the wanted product.</param>
     /// <returns>The specified product.</returns>
-    public async Task<Product?> GetProductById(Guid id)
+    public async Task<ProductDTO> GetProductById(Guid id)
     {
-        return await _repository.GetByIdAsync(id);
+        var result = await _repository.GetByIdAsync(id);
+        return _mapper.Map<ProductDTO>(result);    
     }
 
     /// <summary>

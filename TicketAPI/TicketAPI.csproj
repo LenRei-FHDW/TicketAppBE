@@ -32,6 +32,12 @@
       <Folder Include="EmailTemplates\" />
       <Folder Include="Images\" />
       <Folder Include="Migrations\" />
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\Uploads\sample2.jpg" />
+      <None Include="wwwroot\Uploads\sample1.jpg" />
     </ItemGroup>
 
 </Project>

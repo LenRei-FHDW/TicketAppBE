@@ -118,7 +118,7 @@ var app = builder.Build();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot/Uploads")),
     RequestPath = "/api/images"
 });
 
