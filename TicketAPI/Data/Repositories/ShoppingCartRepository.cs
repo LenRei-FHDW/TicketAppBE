@@ -31,4 +31,11 @@ public class ShoppingCartRepository(TicketApiDbContext context) : Repository<Sho
             .Where(ci => ci.ApplicationUserId == userId)
             .ToListAsync();
     }
+    
+    public async Task RemoveShoppingCartItemWhereUserId(string userId)
+    {
+        await _dbSet
+            .Where(s => s.ApplicationUserId == userId)
+            .ExecuteDeleteAsync();
+    }
 }

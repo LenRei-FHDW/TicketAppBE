@@ -9,7 +9,9 @@ public interface IShoppingCartService
 {
     Task<ShoppingCartItemCreateDTO> AddCartItem(ShoppingCartItemCreateDTO cartItemDto, string userId);
     Task<IEnumerable<ShoppingCartItemDTO>> GetItemsOfUser(string userId);
+    Task<IEnumerable<ShoppingCartItem>> GetModelItemsOfUser(string userId);
     Task RemoveItemFromCart(string userId, Guid productId);
+    Task RemoveAllFromCart(string userId);
     Task<ShoppingCartItem> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId);
 }
 
@@ -50,6 +52,16 @@ public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository,
         var shoppingCartItems = await _shoppingCartRepository.GetShoppingCartItemWhereUserIdJoinProduct(userId);
         return _mapper.Map<IEnumerable<ShoppingCartItemDTO>>(shoppingCartItems);
     }
+    
+    /// <summary>
+    /// Get List ShoppingCartItem of User
+    /// </summary>
+    /// <param name="userId">Id from User</param>
+    /// <returns>IEnumerable ShoppingCartItem of User</returns>
+    public async Task<IEnumerable<ShoppingCartItem>> GetModelItemsOfUser(string userId)
+    {
+        return await _shoppingCartRepository.GetShoppingCartItemWhereUserIdJoinProduct(userId);
+    }
 
     /// <summary>
     /// Remove ShoppingCartItem from User
@@ -60,6 +72,11 @@ public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository,
     {
         var shoppingCartItem = await _shoppingCartRepository.GetShoppingCartItemWhereUserIdAndProductId(userId, productId);
         await _shoppingCartRepository.DeleteEntityAsync(shoppingCartItem);
+    }
+    
+    public async Task RemoveAllFromCart(string userId)
+    {
+        await _shoppingCartRepository.RemoveShoppingCartItemWhereUserId(userId);
     }
 
     /// <summary>

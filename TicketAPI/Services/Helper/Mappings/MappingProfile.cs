@@ -9,13 +9,17 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Order, OrderDTO>();
+        CreateMap<Order, OrderDTO>()
+            .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(o => o.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity)))
+            .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(o => o.OrderItems.Sum(oi => oi.Quantity)));
         CreateMap<OrderItem, OrderItemDTO>()
             .ForMember(dest => dest.ProductId, opt => opt.MapFrom(o => o.Product.ProductId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(o => o.Product.Name));
         CreateMap<OrderItemPostDTO, OrderItem>()
             .ForMember(dest => dest.SinglePrice, opt => opt.MapFrom<SinglePriceResolver>());
-        CreateMap<Order, OrderPreviewDTO>();
+        CreateMap<Order, OrderPreviewDTO>()
+            .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(o => o.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity)))
+            .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(o => o.OrderItems.Sum(oi => oi.Quantity)));
         CreateMap<Product, ProductDTO>();
         CreateMap<Product, ProductPreviewDTO>();
         CreateMap<ShoppingCartItemCreateDTO, ShoppingCartItem>();
