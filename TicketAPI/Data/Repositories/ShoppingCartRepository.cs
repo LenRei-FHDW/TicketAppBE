@@ -3,14 +3,13 @@ using TicketAPI.Data.Models;
 
 namespace TicketAPI.Data.Repositories;
 
-public class ShoppingCartRepository : Repository<ShoppingCartItem, Guid>
+public class ShoppingCartRepository(TicketApiDbContext context) : Repository<ShoppingCartItem, Guid>(context)
 {
-    public ShoppingCartRepository(TicketApiDbContext _dbContext) : base(_dbContext) { }
     
     public async Task<ShoppingCartItem> GetShoppingCartItemWhereUserIdAndProductId(string userId,
         Guid productId)
     {
-        return await _context.ShoppingCartItems
+        return await _dbSet
             .FirstOrDefaultAsync(ci => ci.ApplicationUserId == userId && ci.ProductId == productId) ?? throw new KeyNotFoundException();
     }
 

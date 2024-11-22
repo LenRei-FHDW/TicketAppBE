@@ -7,12 +7,15 @@ namespace TicketAPI.Services.Scoped;
 
 public interface IShoppingCartService
 {
-    
+    Task<ShoppingCartItemCreateDTO> AddCartItem(ShoppingCartItemCreateDTO cartItemDto, string userId);
+    Task<IEnumerable<ShoppingCartItemDTO>> GetItemsOfUser(string userId);
+    Task RemoveItemFromCart(string userId, Guid productId);
+    Task<ShoppingCartItem> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId);
 }
 
-public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository, IMapper _mapper)
+public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository, IMapper _mapper) : IShoppingCartService
 {
-    public async Task<IEnumerable<ShoppingCartItemCreateDTO>> AddCartItem(ShoppingCartItemCreateDTO cartItemDto, string userId)
+    public async Task<ShoppingCartItemCreateDTO> AddCartItem(ShoppingCartItemCreateDTO cartItemDto, string userId)
     {
         ShoppingCartItem shoppingCartItemCreated;
         try
@@ -23,10 +26,12 @@ public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository,
         }
         catch (KeyNotFoundException)
         {
+            
             var shoppingCartItem = _mapper.Map<ShoppingCartItem>(cartItemDto);
+            shoppingCartItem.ApplicationUserId = userId;
             shoppingCartItemCreated = await _shoppingCartRepository.AddAsync(shoppingCartItem);
         }
-        return _mapper.Map<IEnumerable<ShoppingCartItemCreateDTO>>(shoppingCartItemCreated);
+        return _mapper.Map<ShoppingCartItemCreateDTO>(shoppingCartItemCreated);
     }
 
     public async Task<IEnumerable<ShoppingCartItemDTO>> GetItemsOfUser(string userId)
@@ -41,10 +46,11 @@ public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository,
         await _shoppingCartRepository.DeleteEntityAsync(shoppingCartItem);
     }
 
-    public async void EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId)
+    public async Task<ShoppingCartItem> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId)
     {
         var cartItem = await _shoppingCartRepository.GetShoppingCartItemWhereUserIdAndProductId(userId, productId);
         cartItem.Quantity = cartItemDto.Quantity;
         await _shoppingCartRepository.UpdateAsync(cartItem);
+        return cartItem;
     }   
 }

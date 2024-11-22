@@ -12,13 +12,13 @@ namespace TicketAPI.Controllers
     [ApiController]
     public class ShoppingCartController(
         UserManager<ApplicationUser> _userManager, 
-        ShoppingCartService _shoppingCartService) 
+        IShoppingCartService _shoppingCartService) 
         : ControllerBase
     {
         // GET: api/Cart
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ShoppingCartItem>>> GetCartItems()
+        public async Task<ActionResult<IEnumerable<ShoppingCartItemDTO>>> GetCartItems()
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null)
@@ -82,7 +82,7 @@ namespace TicketAPI.Controllers
                 return NoContent();
             }
             
-            _shoppingCartService.EditCartItem(productId, cartItemDto, userId);
+            await _shoppingCartService.EditCartItem(productId, cartItemDto, userId);
             return NoContent();
         }
     }

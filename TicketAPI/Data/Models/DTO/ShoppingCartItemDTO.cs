@@ -13,9 +13,9 @@ public class ShoppingCartItemDTO
     [Range(0, double.MaxValue)]
     public decimal Price {get; set;}
     
-    public string Description {get; set;} =  String.Empty;
+    public string Description {get; set;}
     
     public string? ImageName { get; set; }
 
-    int Quantity { get; set; }
+    public int Quantity { get; set; }
 }
