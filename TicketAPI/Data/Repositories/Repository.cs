@@ -10,7 +10,7 @@ public interface IRepository<TEntity , in TIdentifier>
     Task<TEntity> UpdateAsync(TEntity entity);
     Task AddRangeAsync(IEnumerable<TEntity> entities);
     Task DeleteAsync(TIdentifier id);
-    
+    Task DeleteEntityAsync(TEntity entity);
     Task<bool> ExistsAsync(TIdentifier id);
 }
 
@@ -40,7 +40,6 @@ public class Repository<TEntity,TIdentifier>: IRepository<TEntity, TIdentifier> 
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
         var entry = _dbSet.Update(entity);
-        _context.Entry(entity).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return entry.Entity;
     }
@@ -65,8 +64,14 @@ public class Repository<TEntity,TIdentifier>: IRepository<TEntity, TIdentifier> 
         }
     }
 
+    public async Task DeleteEntityAsync(TEntity entity)
+    {
+        _dbSet.Remove(entity);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<bool> ExistsAsync(TIdentifier id)
     {
-        return await _dbSet.FindAsync(id) != null;
+        return await _dbSet.AnyAsync(e => e.Equals(id));
     }
 }
