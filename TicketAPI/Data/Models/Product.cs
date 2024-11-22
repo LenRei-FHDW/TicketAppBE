@@ -7,7 +7,7 @@ public class Product
     [Key] public Guid ProductId { get; set; } = Guid.NewGuid();
     
     [Required]
-    public DateTime CreatedDateTime { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     [Required]
     public string Name {get; set;} = String.Empty;
