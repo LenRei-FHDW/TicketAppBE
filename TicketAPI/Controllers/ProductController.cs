@@ -31,7 +31,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById(Guid id)
+    public async Task<ActionResult<ProductDTO>> GetProductById(Guid id)
     {
         var product = await _productService.GetProductById(id);
         return Ok(product);
