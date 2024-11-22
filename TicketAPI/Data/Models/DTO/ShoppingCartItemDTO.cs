@@ -1,7 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace TicketAPI.Data.Models.DTO;
 
 public class ShoppingCartItemDTO
 {
-    public ProductPreview Product { get; set; }
+    public Guid ProductId { get; set; }
+    
+    public string ProductName { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    [Range(0, double.MaxValue)]
+    public decimal Price {get; set;}
+    
+    public string Description {get; set;} =  String.Empty;
+    
+    public string? ImageName { get; set; }
+
     int Quantity { get; set; }
 }

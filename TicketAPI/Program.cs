@@ -31,7 +31,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
-builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
+//builder.Services.AddTransient<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddTransient<ShoppingCartService>();
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();

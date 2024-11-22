@@ -11,8 +11,8 @@ namespace TicketAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class ShoppingCartController(
-        UserManager<ApplicationUser> userManager, 
-        ShoppingCartService shoppingCartService) 
+        UserManager<ApplicationUser> _userManager, 
+        ShoppingCartService _shoppingCartService) 
         : ControllerBase
     {
         // GET: api/Cart
@@ -20,8 +20,14 @@ namespace TicketAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ShoppingCartItem>>> GetCartItems()
         {
-            var userId = userManager.GetUserId(User);
-            var cartItems = await shoppingCartService.GetItemsOfUser(userId);
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                //LOG
+                return Unauthorized();
+            }
+            
+            var cartItems = await _shoppingCartService.GetItemsOfUser(userId);
             return Ok(cartItems);
         }
 
@@ -31,10 +37,25 @@ namespace TicketAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                //LOG
                 return BadRequest(ModelState);
             }
-            var userId = userManager.GetUserId(User);
-            var createDto = await shoppingCartService.AddCartItem(cartItemDto, userId);
+            
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                // LOG
+                return Unauthorized();
+            }
+
+            if (cartItemDto.Quantity == 0)
+            {
+                // LOG
+                return BadRequest();
+            }
+            
+            //var createDto = await _shoppingCartService.AddCartItem(cartItemDto, userId);
+            await _shoppingCartService.AddCartItem(cartItemDto, userId);
             return Created();
         }
 
@@ -44,19 +65,24 @@ namespace TicketAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // LOG
                 return BadRequest(ModelState);
             }
-            var userId = userManager.GetUserId(User);
-            shoppingCartService.EditCartItem(productId, cartItemDto, userId);
-            return NoContent();
-        }
+            
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                // LOG
+                return Unauthorized();
+            }
 
-        // DELETE: api/Cart/{productId}
-        [HttpDelete("{productId}")]
-        public async Task<IActionResult> RemoveCartItem(Guid productId)
-        {
-            var userId = userManager.GetUserId(User);
-            await shoppingCartService.RemoveItemFromCart(userId, productId);
+            if (cartItemDto.Quantity == 0)
+            {
+                await _shoppingCartService.RemoveItemFromCart(userId, productId);
+                return NoContent();
+            }
+            
+            _shoppingCartService.EditCartItem(productId, cartItemDto, userId);
             return NoContent();
         }
     }
