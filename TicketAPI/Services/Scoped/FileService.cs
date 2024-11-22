@@ -25,7 +25,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
         }
         
         var contentPath = environment.ContentRootPath;
-        var path = Path.Combine(contentPath, "Uploads");
+        var path = Path.Combine(contentPath, "wwwroot/Uploads");
 
         if (!Directory.Exists(path))
         {
@@ -60,7 +60,7 @@ public class FileService(IWebHostEnvironment environment, IConfiguration configu
         }
         
         var contentPath = environment.ContentRootPath;
-        var path = Path.Combine(contentPath, "Uploads", fileNameWithExtension);
+        var path = Path.Combine(contentPath, "wwwroot/Uploads", fileNameWithExtension);
 
         if (!File.Exists(path))
         {
