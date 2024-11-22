@@ -8,13 +8,21 @@ using TicketAPI.Services.Scoped;
 
 namespace TicketAPI.Controllers
 {
+    /// <summary>
+    /// This controller manages all ShoppingCart api calls.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ShoppingCartController(
         UserManager<ApplicationUser> _userManager, 
-        IShoppingCartService _shoppingCartService) 
+        IShoppingCartService _shoppingCartService,
+        ILogger<ProductController> _logger) 
         : ControllerBase
     {
+        /// <summary>
+        /// List all ShoppingCartItems
+        /// </summary>
+        /// <returns>IEnumerable of ShoppingCartItem of Authorize User</returns>
         // GET: api/Cart
         [Authorize]
         [HttpGet]
@@ -23,7 +31,7 @@ namespace TicketAPI.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null)
             {
-                //LOG
+                _logger.LogWarning("UserId is null");
                 return Unauthorized();
             }
             
@@ -31,20 +39,25 @@ namespace TicketAPI.Controllers
             return Ok(cartItems);
         }
 
+        /// <summary>
+        /// Add  Item to ShoppingCart
+        /// </summary>
+        /// /// <param name="cartItemDto">Item to add</param>
+        /// <returns>ShoppingCartItemDTO of Authorize User</returns>
         // POST: api/Cart
         [HttpPost]
         public async Task<ActionResult<ShoppingCartItemDTO>> AddCartItem([FromBody] ShoppingCartItemCreateDTO cartItemDto)
         {
             if (!ModelState.IsValid)
             {
-                //LOG
+                _logger.LogWarning("cartItemDto is invalid: {ModelState}", ModelState.ToString());
                 return BadRequest(ModelState);
             }
             
             var userId = _userManager.GetUserId(User);
             if (userId == null)
             {
-                // LOG
+                _logger.LogWarning("UserId is null");
                 return Unauthorized();
             }
 
@@ -59,20 +72,26 @@ namespace TicketAPI.Controllers
             return Created();
         }
 
+        /// <summary>
+        /// Edit Item in ShoppingCart
+        /// </summary>
+        /// <param name="productId">ProductId</param>
+        /// <param name="cartItemDto">Item to edit</param>
+        /// <returns>NoContent</returns>
         // PUT: api/Cart/{productId}
         [HttpPut("{productId}")]
         public async Task<IActionResult> UpdateCartItem(Guid productId, [FromBody] ShoppingCartItemEditDTO cartItemDto)
         {
             if (!ModelState.IsValid)
             {
-                // LOG
+                _logger.LogWarning("cartItemDto is invalid: {ModelState}", ModelState.ToString());
                 return BadRequest(ModelState);
             }
             
             var userId = _userManager.GetUserId(User);
             if (userId == null)
             {
-                // LOG
+                _logger.LogWarning("UserId is null");
                 return Unauthorized();
             }
 
