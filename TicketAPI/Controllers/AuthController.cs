@@ -110,7 +110,7 @@ namespace TicketAPI.Controllers
         /// <summary>
         /// Sends a mail with a reset link.
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="model">Which account should be sent a forgot password mail </param>
         /// <returns></returns>
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModelDTO model)
