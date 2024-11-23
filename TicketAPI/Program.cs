@@ -39,6 +39,7 @@ builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, G
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<IRepository<Category, Guid>, Repository<Category, Guid>>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>

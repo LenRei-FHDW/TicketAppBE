@@ -17,5 +17,7 @@ public class MappingProfile : Profile
         CreateMap<Order, OrderPreviewDTO>();
         CreateMap<Product, ProductDTO>();
         CreateMap<Product, ProductPreviewDTO>();
+        CreateMap<Category, CategoryDTO>();
+        CreateMap<CategoryCreateDTO, Category>();
     }
 }
