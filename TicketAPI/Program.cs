@@ -28,16 +28,20 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
+
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
 builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
 builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
+builder.Services.AddScoped<IRepository<ShoppingCartItem, Guid>, Repository<ShoppingCartItem, Guid>>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ShoppingCartRepository>();
 builder.Services.AddScoped<OrderRepository>();
 
 // DbContext

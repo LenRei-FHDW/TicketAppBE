@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Scoped;
 
@@ -11,7 +13,7 @@ namespace TicketAPI.Controllers;
 /// This controller manages all calls used for ordering articles.
 /// </summary>
 [Route("api/[controller]")]
-public class OrderController(OrderService _orderService, ILogger<OrderController> _logger) : ControllerBase
+public class OrderController(OrderService _orderService, UserManager<ApplicationUser> _userManager, ILogger<OrderController> _logger, IShoppingCartService _shoppingCartService) : ControllerBase
 {
     /// <summary>
     /// Finds the current user and returns its orders.
@@ -22,8 +24,15 @@ public class OrderController(OrderService _orderService, ILogger<OrderController
     public async Task<ActionResult<IEnumerable<OrderPreviewDTO>>> GetOrdersOfUser()
     {
         _logger.LogTrace("GetOrdersOfUser request received.");
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.GetOrdersOfUsers(email));
+        
+        var userId = _userManager.GetUserId(User);
+        if (userId == null)
+        {
+            _logger.LogWarning("UserId is null");
+            return Unauthorized();
+        }
+        
+        return Ok(await _orderService.GetOrdersOfUsers(userId));
     }
 
     /// <summary>
@@ -32,25 +41,50 @@ public class OrderController(OrderService _orderService, ILogger<OrderController
     /// <param name="id">Id of the order.</param>
     /// <returns>The specified order.</returns>
     [Authorize]
-    [HttpGet("show/{id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
     {
         _logger.LogTrace("GetOrder({Guid}) request received.", id);
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.GetOrder(email, id, false));
+        
+        var userId = _userManager.GetUserId(User);
+        if (userId == null)
+        {
+            _logger.LogWarning("UserId is null");
+            return Unauthorized();
+        }
+        
+        return Ok(await _orderService.GetOrder(userId, id, false));
     }
 
     /// <summary>
     /// Creates a new order.
     /// </summary>
     /// <param name="orderItems">The product id and the quantity of the items.</param>
-    /// <returns></returns>
+    /// <returns>Order with his orderItems</returns>
     [Authorize]
     [HttpPost("create")]
-    public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] IEnumerable<OrderItemPostDTO> orderItems)
+    public async Task<ActionResult<OrderDTO>> CreateOrder()
     {
         _logger.LogTrace("CreateOrder request received.");
-        var email = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(await _orderService.CreateNewOrder(email, orderItems));
+        
+        var userId = _userManager.GetUserId(User);
+        if (userId == null)
+        {
+            _logger.LogWarning("UserId is null");
+            return Unauthorized();
+        }
+
+        var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(userId);
+        if (shoppingCartItems.Count() == 0)
+        {
+            _logger.LogWarning("No Product in ShoppingCart");
+            return BadRequest("No Product in ShoppingCart");
+        }
+
+        var order = await _orderService.CreateNewOrder(userId, shoppingCartItems);
+
+        await _shoppingCartService.RemoveAllFromCart(userId);
+        
+        return Ok(order);
     }
 }
