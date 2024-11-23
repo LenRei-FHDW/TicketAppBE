@@ -31,6 +31,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
+builder.Services.AddScoped<CategoryService>();
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
