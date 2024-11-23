@@ -5,7 +5,7 @@ namespace TicketAPI.Data.Repositories;
 
 public interface IProductRepository
 {
-    Task<List<Product>> GetProductsAsync();
+    public Task<List<Product>> GetProductsWhereCategoryIdAsync(Guid categoryId);
 }
 
 /// <summary>
@@ -22,5 +22,12 @@ public class ProductRepository(TicketApiDbContext _context) : IProductRepository
         return await _context.Products
             .Where(p => !p.IsDeleted)
             .ToListAsync() ?? throw new KeyNotFoundException();
+    }
+    
+    public async Task<List<Product>> GetProductsWhereCategoryIdAsync(Guid categoryId)
+    {
+        return await _dbSet
+            .Where(p => p.CategoryId == categoryId)
+            .ToListAsync();
     }
 }
