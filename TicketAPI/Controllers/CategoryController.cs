@@ -37,10 +37,10 @@ public class CategoryController(
     /// </summary>
     /// <param name="id">The unique identifier of the category.</param>
     /// <returns>
-    /// An <see cref="OkObjectResult"/> containing a collection of <see cref="ProductPreviewDTO"/> objects.
+    /// An <see cref="ActionResult"/> containing a collection of <see cref="ProductPreviewDTO"/> objects.
     /// </returns>
     [HttpGet("{id}")]
-    public async Task<OkObjectResult> GetProductsOfCategory(Guid id)
+    public async Task<ActionResult<IEnumerable<ProductPreviewDTO>>> GetProductsOfCategory(Guid id)
     {
         return Ok(await categoryService.GetProductsOfCategory(id));
     }
@@ -55,7 +55,7 @@ public class CategoryController(
     [ValidateModel]
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<ActionResult> CreateCategory([FromBody] CategoryCreateDTO category)
+    public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateDTO category)
     {
         await categoryService.CreateCategory(category);
         return Created();
