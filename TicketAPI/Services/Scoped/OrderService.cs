@@ -83,13 +83,15 @@ public class OrderService(
     /// Creates a new order for the user.
     /// </summary>
     /// <param name="userId">UserId of the user the order is created for.</param>
+    /// <param name="stripeId">stipe Id</param>
     /// <param name="shoppingCartItems">ShoppingCartItems of the user</param>
     /// <returns>The order id, creation date, order items and total price.</returns>
-    public async Task<OrderDTO> CreateNewOrder(string userId, IEnumerable<ShoppingCartItem> shoppingCartItems)
+    public async Task<Order> CreateNewOrder(string userId, string stripeId, IEnumerable<ShoppingCartItem> shoppingCartItems)
     {
         var order = new Order
         {
-            ApplicationUserId = userId
+            ApplicationUserId = userId,
+            StripeId = stripeId,
         };
 
         foreach (var shoppingCartItem in shoppingCartItems)
@@ -103,9 +105,8 @@ public class OrderService(
             order.OrderItems.Add(orderItem);
         }
         
-        var orderEntity = await _orderRepository.AddAsync(order);
-        var orderDTO = _mapper.Map<OrderDTO>(orderEntity);
+        var createOrder = await _orderRepository.AddAsync(order);
         _logger.LogInformation("New order for user '{userId}' created.", userId);
-        return orderDTO;
+        return createOrder;
     }
 }

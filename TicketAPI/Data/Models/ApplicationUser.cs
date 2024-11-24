@@ -10,7 +10,7 @@ public class ApplicationUser : IdentityUser
     public string LastName { get; set; } = String.Empty;
    
     [JsonIgnore] 
-    public Address Addresse { get; set; }
+    public Address Addresse { get; set; } = new Address();
     [JsonIgnore] 
     public ICollection<Order> Orders { get; set; } = new List<Order>();
     

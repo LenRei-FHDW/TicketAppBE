@@ -3,28 +3,33 @@ using Stripe;
 using Stripe.Checkout;
 using Stripe.Climate;
 using TicketAPI.Data.Models;
+using TicketAPI.Data.Models.DTO;
 using TicketAPI.Data.Repositories;
 using TicketAPI.Services.DTO;
-using TicketAPI.Services.Stripe;
+using Order = TicketAPI.Data.Models.Order;
 
 namespace TicketAPI.Services.Scoped;
 
 public interface IPaymentService
 {
-    Task<Session> CreateCheckoutSession(OrderDTO orderDTO, string userEmail);
-    Task<ServiceResponse<bool>> CompletOrder(HttpRequest request);
-    Task<Guid> CanceledOrder(Guid orderId);
+    Session CreateCheckoutSession(IEnumerable<ShoppingCartItem> shoppingCartItems,string userId, string userEmail);
+    Task<ServiceResponseDTO<bool>> CompletOrder(HttpRequest request);
 }
 
+/// <summary>
+/// This Service is for the Payment with Stripe
+/// </summary>
 public class PaymentService : IPaymentService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<PaymentService> _logger;
     private readonly OrderService _orderService;
     private readonly IRepository<TicketAPI.Data.Models.Order, Guid> _orderRepository;
-    private IMapper _mapper;
+    private readonly IMapper _mapper;
+    private readonly IShoppingCartService _shoppingCartService;
+    private readonly IUserRepository _userRepository;
     
-    public PaymentService(IConfiguration configuration, ILogger<PaymentService> logger, OrderService orderService, IRepository<TicketAPI.Data.Models.Order, Guid> orderRepository, IMapper mapper)
+    public PaymentService(IConfiguration configuration, ILogger<PaymentService> logger, OrderService orderService, IRepository<TicketAPI.Data.Models.Order, Guid> orderRepository, IMapper mapper, IShoppingCartService shoppingCartService, IUserRepository userRepository)
     {
         StripeConfiguration.ApiKey = configuration.GetValue<string>("StripeConfiguration:ApiKeyS");
         _configuration = configuration;
@@ -32,28 +37,37 @@ public class PaymentService : IPaymentService
         _orderService = orderService;
         _orderRepository = orderRepository;
         _mapper = mapper;
+        _shoppingCartService = shoppingCartService;
+        _userRepository = userRepository;
     }
     
-    public async Task<Session> CreateCheckoutSession(OrderDTO order, string userEmail)
+    /// <summary>
+    /// Creates a Checkout Session for Stripe
+    /// </summary>
+    /// <param name="shoppingCartItems">ShopingCartItems for the order</param>
+    /// <param name="userId">Id of the User</param>
+    /// <param name="userEmail">Email of the user</param>
+    /// <returns>Create Stripe Session</returns>
+    public  Session CreateCheckoutSession(IEnumerable<ShoppingCartItem> shoppingCartItems, string userId, string userEmail)
     {
-
         var lineItems = new List<SessionLineItemOptions>();
 
-        foreach (var orderItem in order.OrderItems)
+        foreach (var cartItem in shoppingCartItems)
         {
+           
             var item = new SessionLineItemOptions
             {
                 PriceData = new SessionLineItemPriceDataOptions
                 {
-                    UnitAmountDecimal = orderItem.SinglePrice * 100,
+                    UnitAmountDecimal = cartItem.Product.Price * 100,
                     Currency = "eur",
                     ProductData = new SessionLineItemPriceDataProductDataOptions
                     {
-                        Name = orderItem.Name,
-                        Images = new List<string> { "https://www1.wdr.de/nachrichten/deutschland-ticket-104~_v-HintergrundL.jpg" }
+                        Name =  cartItem.Product.Name,
+                        Images = new List<string> { _configuration.GetValue<string>("BackEnd:BaseUrl") + _configuration.GetValue<string>("BackEnd:Images") + cartItem.Product.ImageName }
                     }
                 },
-                Quantity = orderItem.Quantity
+                Quantity = cartItem.Quantity
             };
             
             lineItems.Add(item);
@@ -65,7 +79,7 @@ public class PaymentService : IPaymentService
             CustomerEmail = userEmail,
             ExtraParams = new Dictionary<string, object>
             {
-                { "metadata[orderId]", order.OrderId }
+                { "metadata[userId]", userId }
             },
             ShippingAddressCollection = new SessionShippingAddressCollectionOptions
             {
@@ -78,8 +92,8 @@ public class PaymentService : IPaymentService
             Currency = "eur",
             LineItems = lineItems,
             Mode = "payment",
-            SuccessUrl = "https://localhost:7145/api/Order/CompletOrder",
-            CancelUrl = $"https://localhost:7145/api/Order/CanceledOrder/{order.OrderId}",
+            SuccessUrl = _configuration.GetValue<string>("BackEnd:BaseUrl") + _configuration.GetValue<string>("BackEnd:CallbackSuccess"),
+            CancelUrl = _configuration.GetValue<string>("BackEnd:BaseUrl") + _configuration.GetValue<string>("BackEnd:CallbackCanceled"),
         };
         
         var service = new SessionService();
@@ -87,7 +101,12 @@ public class PaymentService : IPaymentService
         return session;
     }
 
-    public async Task<ServiceResponse<bool>> CompletOrder(HttpRequest request)
+    /// <summary>
+    /// Creates Order form User
+    /// </summary>
+    /// <param name="request">Data from Stripe</param>
+    /// <returns>Status for Stripe</returns>
+    public async Task<ServiceResponseDTO<bool>> CompletOrder(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
         try
@@ -96,35 +115,53 @@ public class PaymentService : IPaymentService
 
             if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted) {
                 var session = stripeEvent.Data.Object as Session;
-                
-                var orderId = session.Metadata["orderId"];
-                var stripeId = session.Id;
 
-                var order = await _orderRepository.GetByIdAsync(new Guid(orderId));
-                order.StripeId = stripeId;
-                order.PlaymentStatus = PlaymentStatus.Success;
+                var userId = session.Metadata["userId"];
+                var user = await _userRepository.GetUserWithAddressAsync(userId);
+                 if (user == null)
+                     throw new NullReferenceException("User not found");
                 
-                await _orderRepository.UpdateAsync(order);
+                 if (user.Addresse == null)
+                 {
+                     user.Addresse = new TicketAPI.Data.Models.Address
+                     {
+                         ApplicationUserId = userId,
+                         Street1 = session.ShippingDetails.Address.Line1,
+                         Street2 = session.ShippingDetails.Address.Line2,
+                         City = session.ShippingDetails.Address.City,
+                         State = session.ShippingDetails.Address.State,
+                         Zip = session.ShippingDetails.Address.PostalCode
+                     };
+                 }
+                 else
+                 {
+                     user.Addresse.Street1 = session.ShippingDetails.Address.Line1;
+                     user.Addresse.Street2 = session.ShippingDetails.Address.Line2;
+                     user.Addresse.City = session.ShippingDetails.Address.City;
+                     user.Addresse.State = session.ShippingDetails.Address.State;
+                     user.Addresse.Zip = session.ShippingDetails.Address.PostalCode;
+                 }
+                
+                await _userRepository.UpdateUserAsync(user);
+                
+                var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(user.Id);
+                if (shoppingCartItems.Count() == 0)
+                {
+                    _logger.LogWarning("No Product in ShoppingCart");
+                    throw new NullReferenceException("No Product in ShoppingCart");
+                }
+
+                var stripeId = session.Id;
+                
+                var createOrder = await _orderService.CreateNewOrder(user.Id, stripeId, shoppingCartItems);
+                
+                await _shoppingCartService.RemoveAllFromCart(user.Id);
             }
-            return new ServiceResponse<bool> { Data = true };
+            return new ServiceResponseDTO<bool> { Data = true };
         }
         catch (StripeException e)
         {
-            return new ServiceResponse<bool> { Data = false, Success = false, Message = e.Message };
+            return new ServiceResponseDTO<bool> { Data = false, Success = false, Message = e.Message };
         }
-    }
-    
-    public async Task<Guid> CanceledOrder(Guid orderId)
-    {
-        var order = await _orderService.GetOrderById(orderId);
-        var shoppingCartItems = new List<ShoppingCartItem>();
-        foreach (var orderItem in order.OrderItems)
-        {
-            shoppingCartItems.Add(_mapper.Map<ShoppingCartItem>(orderItem));
-        }
-        
-        var newOrder = await _orderService.CreateNewOrder(order.ApplicationUserId, shoppingCartItems);
-
-        return newOrder.OrderId;
     }
 }

@@ -9,7 +9,6 @@ using Stripe.BillingPortal;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Scoped;
-using TicketAPI.Services.Stripe;
 
 namespace TicketAPI.Controllers;
 
@@ -68,10 +67,9 @@ public class OrderController(
     }
 
     /// <summary>
-    /// Creates a new order.
+    /// Creates order session for stripe.
     /// </summary>
-    /// <param name="orderItems">The product id and the quantity of the items.</param>
-    /// <returns>Order with his orderItems</returns>
+    /// <returns>Url to Stripe</returns>
     [Authorize]
     [HttpPost("create")]
     public async Task<ActionResult<Session>> CreateOrder()
@@ -91,17 +89,16 @@ public class OrderController(
             logger.LogWarning("No Product in ShoppingCart");
             return BadRequest("No Product in ShoppingCart");
         }
-
-        var order = await orderService.CreateNewOrder(user.Id, shoppingCartItems);
         
-        await shoppingCartService.RemoveAllFromCart(user.Id);
-        
-        var session = await playmentService.CreateCheckoutSession(order, user.Email);
+        var session = playmentService.CreateCheckoutSession(shoppingCartItems, user.Id, user.Email);
         
         return Ok(session.Url);
     }
     
-    
+    /// <summary>
+    /// Webhook for Stripe if Order Completet
+    /// </summary>
+    /// <returns>Returns status for Stripe</returns>
     [AllowAnonymous]
     [HttpPost("CompletOrder")]
     public async Task<IActionResult> PostCompletOrder()
@@ -114,6 +111,10 @@ public class OrderController(
         return Ok(response);
     }
     
+    /// <summary>
+    /// Redirect from Stripe to App back
+    /// </summary>
+    /// <returns>Redirect to App</returns>
     [AllowAnonymous]
     [HttpGet("CompletOrder")]
     public IActionResult GetCompletOrder()
@@ -126,22 +127,19 @@ public class OrderController(
         return Redirect(callbackUrl.ToString());
     }
     
+    /// <summary>
+    /// Redirect from Stripe to App back if Canceled
+    /// </summary>
+    /// <returns>Redirect to App</returns>
     [AllowAnonymous]
-    [HttpGet("CanceledOrder/{orderId}")]
-    public async Task<ActionResult> GetCanceledOrder(Guid orderId)
+    [HttpGet("CanceledOrder")]
+    public ActionResult GetCanceledOrder()
     {
-        var newOrderId = await playmentService.CanceledOrder(orderId);
-        
-        
         var baseUrl = configuration.GetValue<string>("FrontEnd:BaseUrl");
         var callbackUrl = new UriBuilder(new Uri(baseUrl))
         {
             Path = configuration["FrontEnd:CallbackCanceled"]
         };
-        
-        var query  = HttpUtility.ParseQueryString(string.Empty);
-        query["orderId"] = newOrderId.ToString();
-        callbackUrl.Query = query.ToString();
         
         return Redirect(callbackUrl.ToString());
     }

@@ -1,6 +1,6 @@
-namespace TicketAPI.Services.Stripe;
+namespace TicketAPI.Services.DTO;
 
-public class ServiceResponse<T>
+public class ServiceResponseDTO<T>
 {
     public T? Data { get; set; }
 
