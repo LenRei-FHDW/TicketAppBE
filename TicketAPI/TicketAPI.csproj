@@ -32,7 +32,6 @@
     <ItemGroup>
       <Folder Include="EmailTemplates\" />
       <Folder Include="Images\" />
-      <Folder Include="Migrations\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>
 

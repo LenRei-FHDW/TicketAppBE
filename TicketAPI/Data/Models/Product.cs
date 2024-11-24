@@ -9,10 +9,12 @@ public class Product
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
+    public Guid? CategoryId { get; set; }
+    [ForeignKey("CategoryId")]
+    public Category? Category { get; set; }
+    
     [Required]
     public string Name {get; set;} = String.Empty;
-    
-    
     public string Description {get; set;} =  String.Empty;
    
     [Column(TypeName = "decimal(18,2)")]

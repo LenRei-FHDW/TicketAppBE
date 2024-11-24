@@ -19,7 +19,7 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <returns>A List with all products (id, name, price)</returns>
     public async Task<IEnumerable<ProductPreviewDTO>> GetAllProductsAsync()
     {
-        var productList = await _productRepository.GetProductsAsync();
+        var productList = await _productRepository.GetAllAsync();
         return _mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
     }
 

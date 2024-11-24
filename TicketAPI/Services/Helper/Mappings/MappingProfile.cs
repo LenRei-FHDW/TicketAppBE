@@ -22,6 +22,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(o => o.OrderItems.Sum(oi => oi.Quantity)));
         CreateMap<Product, ProductDTO>();
         CreateMap<Product, ProductPreviewDTO>();
+		CreateMap<Category, CategoryDTO>();
+        CreateMap<CategoryCreateDTO, Category>();
         CreateMap<ShoppingCartItemCreateDTO, ShoppingCartItem>();
         CreateMap<ShoppingCartItem, ShoppingCartItemCreateDTO>();
         CreateMap<ShoppingCartItem, ShoppingCartItemDTO>()
