@@ -7,4 +7,6 @@ public class ProductPreviewDTO
     public decimal Price { get; set; }
     public string ImageName { get; set; }
     public DateTime CreatedAt { get; set; }
+    public Guid? CategoryID { get; set; }
+    public string CategoryName { get; set; }
 }

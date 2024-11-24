@@ -12,7 +12,12 @@ namespace TicketAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class ProductController(IFileService _fileService, ProductService _productService, UserManager<ApplicationUser> _userManager, ILogger<ProductController> _logger) : ControllerBase
+public class ProductController(
+        IFileService fileService,
+        ProductService productService, 
+        UserManager<ApplicationUser> userManager, 
+        ILogger<ProductController> logger
+    ) : ControllerBase
 {
 
     /// <summary>
@@ -22,7 +27,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<ProductPreviewDTO>>> GetProducts()
     {
-        return Ok(await _productService.GetAllProductsAsync());
+        return Ok(await productService.GetAllProductsAsync());
     }
 
     /// <summary>
@@ -33,7 +38,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDTO>> GetProductById(Guid id)
     {
-        var product = await _productService.GetProductById(id);
+        var product = await productService.GetProductById(id);
         return Ok(product);
     }
     
@@ -42,37 +47,38 @@ public class ProductController(IFileService _fileService, ProductService _produc
     /// </summary>
     /// <param name="productDTO">Name, description, price and Image of the article.</param>
     /// <returns>A response based on success or failure.</returns>
-    [Authorize (Roles = "Seller, Admin")]
+    
     [HttpPost]
+    [Authorize (Roles = "Admin")]
     public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO productDTO)
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("productDTO is invalid: {ModelState}", ModelState.ToString());
+            logger.LogWarning("productDTO is invalid: {ModelState}", ModelState.ToString());
             return BadRequest(ModelState);
         } 
         
-        var userId = _userManager.GetUserId(User);
+        var userId = userManager.GetUserId(User);
         if (userId == null)
         {
-            _logger.LogWarning("UserId is null");
+            logger.LogWarning("UserId is null");
             return Unauthorized();
         }
         
         var imageName = string.Empty;
         if (productDTO.ImageFile != null)
         {
-            if (!_productService.CheckImageSize(productDTO.ImageFile))
+            if (!productService.CheckImageSize(productDTO.ImageFile))
             {
-                _logger.LogWarning("Image file size is invalid");
+                logger.LogWarning("Image file size is invalid");
                 return BadRequest(); 
             }
                 
             
-            imageName = await _fileService.SaveFileAsync(productDTO.ImageFile);
+            imageName = await fileService.SaveFileAsync(productDTO.ImageFile);
         }
         
-        var created = await _productService.AddProduct(productDTO, userId, imageName);
+        var created = await productService.AddProduct(productDTO, userId, imageName);
         return Created(nameof(AddProduct), created);
     }
 
@@ -82,48 +88,48 @@ public class ProductController(IFileService _fileService, ProductService _produc
     /// <param name="id">ProductId</param>
     /// <param name="productDTO">ProductId, Name, description, price, ImageName and ImageFile of the product.</param>
     /// <returns>A response based on success or failure.</returns>
-    [Authorize (Roles = "Seller, Admin")]
     [HttpPut("{id}")]
+    [Authorize (Roles = "Admin")]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromForm] ProductEditDTO productDTO)
     {
         if (id != productDTO.ProductId)
         {
-            _logger.LogWarning("Id not match with product");
+            logger.LogWarning("Id not match with product");
             return BadRequest();
         }
         
-        var existingProduct = await _productService.GetProductById(productDTO.ProductId);
+        var existingProduct = await productService.GetProductById(productDTO.ProductId);
         if (existingProduct == null)
         {
-            _logger.LogWarning("Product not found with ID: {productID}", productDTO.ProductId);
+            logger.LogWarning("Product not found with ID: {productID}", productDTO.ProductId);
             return NotFound();
         }
             
         
         if (productDTO.ImageFile != null)
         {
-            if (!_productService.CheckImageSize(productDTO.ImageFile))
+            if (!productService.CheckImageSize(productDTO.ImageFile))
             {
-                _logger.LogWarning("Image file size is invalid\"");
+                logger.LogWarning("Image file size is invalid\"");
                 return BadRequest();
             }
                 
             
-            var newImageName = await _fileService.SaveFileAsync(productDTO.ImageFile);
+            var newImageName = await fileService.SaveFileAsync(productDTO.ImageFile);
             if (string.IsNullOrEmpty(newImageName))
             {
-                _logger.LogWarning("New Image Name is empty");
+                logger.LogWarning("New Image Name is empty");
                 return BadRequest();
             }
                 
             
             if(!string.IsNullOrEmpty(productDTO.ImageName))
-                _fileService.DeleteFile(productDTO.ImageName);
+                fileService.DeleteFile(productDTO.ImageName);
             
             productDTO.ImageName = newImageName;
         }
         
-        var result = await _productService.EditProduct(productDTO);
+        var result = await productService.EditProduct(productDTO);
         
         return Ok(result);
     }
@@ -136,7 +142,7 @@ public class ProductController(IFileService _fileService, ProductService _produc
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(Guid id)
     {
-        await _productService.DeleteProduct(id);
+        await productService.DeleteProduct(id);
         
         return Ok();
     }
