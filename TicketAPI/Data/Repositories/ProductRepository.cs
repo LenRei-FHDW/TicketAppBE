@@ -27,7 +27,7 @@ public class ProductRepository(TicketApiDbContext context) : Repository<Product,
     public async Task<List<Product>> GetProductsWhereCategoryIdAsync(Guid categoryId)
     {
         return await _dbSet
-            .Where(p => p.CategoryId == categoryId)
+            .Where(p => p.CategoryId == categoryId && !p.IsDeleted)
             .ToListAsync();
     }
 }
