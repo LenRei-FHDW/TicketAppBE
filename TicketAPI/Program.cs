@@ -32,6 +32,7 @@ builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
+builder.Services.AddScoped<CategoryService>();
 
 
 //Add Repositories
@@ -43,6 +44,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ShoppingCartRepository>();
 builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<IRepository<Category, Guid>, Repository<Category, Guid>>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>

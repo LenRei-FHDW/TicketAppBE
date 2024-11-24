@@ -9,4 +9,6 @@ public class ProductCreateDTO
     public decimal Price {get; set;}
     
     public IFormFile? ImageFile {get; set;}
+    
+    public Guid CategoryId {get; set;}
 }
