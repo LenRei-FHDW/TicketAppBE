@@ -29,6 +29,7 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
