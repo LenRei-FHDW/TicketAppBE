@@ -5,7 +5,7 @@ namespace TicketAPI.Data.Repositories;
 
 public class OrderRepository(TicketApiDbContext context) : Repository<Order, Guid>(context)
 {
-    public async Task<Order> GetByIdAsynchLoadEager(Guid orderId)
+    public async Task<Order> GetByIdAsyncLoadEager(Guid orderId)
     {
             return await _dbSet
                 .Include(e => e.ApplicationUser)
