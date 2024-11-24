@@ -51,6 +51,10 @@ public class DbSeeder
             {
                 await userManager.AddToRoleAsync(newAdminUser, "Admin");
             }
+            else
+            {
+                throw new Exception(createAdminResult.Errors.First().Description);
+            }
         }
     }
 }
