@@ -3,8 +3,15 @@ using TicketAPI.Data.Models;
 
 namespace TicketAPI.Data;
 
+/// <summary>
+/// This Class can SeedData to the Database
+/// </summary>
 public class DbSeeder
 {
+    /// <summary>
+    /// Seed Rollen into the Databse
+    /// </summary>
+    /// <param name="roleManager">RoleManger to create Roles</param>
     public static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     {
         string [] roleNames = ["Admin", "User"];
@@ -18,6 +25,11 @@ public class DbSeeder
         }
     }
     
+    /// <summary>
+    /// Seed Admin User into the Databse
+    /// </summary>
+    /// <param name="userManager">UserManger to create User</param>
+    /// <param name="configuration">Configuration from appsetings</param>
     public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
     {
         var adminEmail = configuration["AdminUser:Email"];
