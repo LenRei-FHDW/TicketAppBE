@@ -6,5 +6,5 @@ public class ProductPreviewDTO
     public string Name { get; set; }
     public decimal Price { get; set; }
     public string ImageName { get; set; }
-    public DateTime CreateDateTime { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
