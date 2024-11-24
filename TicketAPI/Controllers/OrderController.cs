@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,14 @@ namespace TicketAPI.Controllers;
 /// This controller manages all calls used for ordering articles.
 /// </summary>
 [Route("api/[controller]")]
-public class OrderController(OrderService _orderService, UserManager<ApplicationUser> _userManager, ILogger<OrderController> _logger, IShoppingCartService _shoppingCartService, IPaymentService playmentService) : ControllerBase
+public class OrderController(
+    OrderService orderService, 
+    UserManager<ApplicationUser> userManager, 
+    ILogger<OrderController> logger, 
+    IShoppingCartService shoppingCartService, 
+    IPaymentService playmentService,
+    IConfiguration configuration
+    ) : ControllerBase
 {
     /// <summary>
     /// Finds the current user and returns its orders.
@@ -26,16 +34,16 @@ public class OrderController(OrderService _orderService, UserManager<Application
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<OrderPreviewDTO>>> GetOrdersOfUser()
     {
-        _logger.LogTrace("GetOrdersOfUser request received.");
+        logger.LogTrace("GetOrdersOfUser request received.");
         
-        var userId = _userManager.GetUserId(User);
+        var userId = userManager.GetUserId(User);
         if (userId == null)
         {
-            _logger.LogWarning("UserId is null");
+            logger.LogWarning("UserId is null");
             return Unauthorized();
         }
         
-        return Ok(await _orderService.GetOrdersOfUsers(userId));
+        return Ok(await orderService.GetOrdersOfUsers(userId));
     }
 
     /// <summary>
@@ -47,16 +55,16 @@ public class OrderController(OrderService _orderService, UserManager<Application
     [HttpGet("{id}")]
     public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
     {
-        _logger.LogTrace("GetOrder({Guid}) request received.", id);
+        logger.LogTrace("GetOrder({Guid}) request received.", id);
         
-        var userId = _userManager.GetUserId(User);
+        var userId = userManager.GetUserId(User);
         if (userId == null)
         {
-            _logger.LogWarning("UserId is null");
+            logger.LogWarning("UserId is null");
             return Unauthorized();
         }
         
-        return Ok(await _orderService.GetOrder(userId, id, false));
+        return Ok(await orderService.GetOrder(userId, id, false));
     }
 
     /// <summary>
@@ -68,38 +76,73 @@ public class OrderController(OrderService _orderService, UserManager<Application
     [HttpPost("create")]
     public async Task<ActionResult<Session>> CreateOrder()
     {
-        _logger.LogTrace("CreateOrder request received.");
+        logger.LogTrace("CreateOrder request received.");
         
-        var user = await _userManager.GetUserAsync(User);
+        var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            _logger.LogWarning("User is null");
+            logger.LogWarning("User is null");
             return Unauthorized();
         }
 
-        var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(user.Id);
+        var shoppingCartItems = await shoppingCartService.GetModelItemsOfUser(user.Id);
         if (shoppingCartItems.Count() == 0)
         {
-            _logger.LogWarning("No Product in ShoppingCart");
+            logger.LogWarning("No Product in ShoppingCart");
             return BadRequest("No Product in ShoppingCart");
         }
 
-        var order = await _orderService.CreateNewOrder(user.Id, shoppingCartItems);
-
-        //await _shoppingCartService.RemoveAllFromCart(user.Id);
+        var order = await orderService.CreateNewOrder(user.Id, shoppingCartItems);
+        
+        await shoppingCartService.RemoveAllFromCart(user.Id);
         
         var session = await playmentService.CreateCheckoutSession(order, user.Email);
         
-        return Ok(session);
-        //return Ok(order);
+        return Ok(session.Url);
     }
     
-    [HttpGet("CompletOrder")]
+    
     [AllowAnonymous]
-    public ActionResult CompletOrder(Guid orderId)
+    [HttpPost("CompletOrder")]
+    public async Task<IActionResult> PostCompletOrder()
     {
-        var order = orderId.ToString();
+        var response = await playmentService.CompletOrder(Request);
+        if(!response.Success)
+        {
+            return BadRequest(response.Message);
+        }
+        return Ok(response);
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("CompletOrder")]
+    public IActionResult GetCompletOrder()
+    {
+        var baseUrl = configuration.GetValue<string>("FrontEnd:BaseUrl");
+        var callbackUrl = new UriBuilder(new Uri(baseUrl))
+        {
+            Path = configuration["FrontEnd:CallbackSuccess"]
+        };
+        return Redirect(callbackUrl.ToString());
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("CanceledOrder/{orderId}")]
+    public async Task<ActionResult> GetCanceledOrder(Guid orderId)
+    {
+        var newOrderId = await playmentService.CanceledOrder(orderId);
         
-        return Redirect("https://pfax423.store");
+        
+        var baseUrl = configuration.GetValue<string>("FrontEnd:BaseUrl");
+        var callbackUrl = new UriBuilder(new Uri(baseUrl))
+        {
+            Path = configuration["FrontEnd:CallbackCanceled"]
+        };
+        
+        var query  = HttpUtility.ParseQueryString(string.Empty);
+        query["orderId"] = newOrderId.ToString();
+        callbackUrl.Query = query.ToString();
+        
+        return Redirect(callbackUrl.ToString());
     }
 }

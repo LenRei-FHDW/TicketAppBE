@@ -14,7 +14,15 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages all actions of ordering.
 /// </summary>
-public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, ILogger<OrderService> _logger, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper)
+public class OrderService(
+    OrderRepository _orderRepository, 
+    IRepository<OrderItem, Guid> _orderItemRepository, 
+    TicketApiDbContext _context, 
+    IMapper _mapper, 
+    ILogger<OrderService> _logger, 
+    UserManager<ApplicationUser> _userManager, 
+    EmailHelper _mailHelper
+    )
 {
     /// <summary>
     /// Collects all orders of the user with this userId. 
@@ -29,6 +37,27 @@ public class OrderService(OrderRepository _orderRepository, IRepository<OrderIte
             .ThenInclude(oi => oi.Product)
             .ToListAsync();
        return _mapper.Map<IEnumerable<OrderPreviewDTO>>(orders);
+    }
+    
+    /// <summary>
+    /// Finds a specific order. This action is only allowed if the order is your own or if you are an admin.
+    /// </summary>
+    /// <param name="userId">UserId of the user.</param>
+    /// <param name="id">Id of the order.</param>
+    /// <param name="isAdmin">Has the requester admin rights.</param>
+    /// <returns>The order id, creation date, order items and total price.</returns>
+    /// <exception cref="ForbiddenException">The user has no access rights for this order.</exception>
+    public async Task<Order> GetOrderById(Guid orderId)
+    {
+        var order = await _orderRepository.GetByIdAsyncLoadEager(orderId);
+        
+        if (order == null)
+        {
+            _logger.LogInformation("Oder not found with ID: {orderId}", orderId);
+            throw new KeyNotFoundException();
+        }
+        
+        return order;
     }
 
     /// <summary>
