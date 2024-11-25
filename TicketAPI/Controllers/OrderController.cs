@@ -21,7 +21,7 @@ public class OrderController(
     UserManager<ApplicationUser> userManager, 
     ILogger<OrderController> logger, 
     IShoppingCartService shoppingCartService, 
-    IPaymentService playmentService,
+    IPaymentService paymentService,
     IConfiguration configuration
     ) : ControllerBase
 {
@@ -90,7 +90,7 @@ public class OrderController(
             return BadRequest("No Product in ShoppingCart");
         }
         
-        var session = playmentService.CreateCheckoutSession(shoppingCartItems, user.Id, user.Email);
+        var session = paymentService.CreateCheckoutSession(shoppingCartItems, user.Id, user.Email);
         
         return Ok(session.Url);
     }
@@ -103,7 +103,7 @@ public class OrderController(
     [HttpPost("CompletOrder")]
     public async Task<IActionResult> PostCompletOrder()
     {
-        var response = await playmentService.CompletOrder(Request);
+        var response = await paymentService.CompletOrder(Request);
         if(!response.Success)
         {
             return BadRequest(response.Message);
