@@ -48,13 +48,13 @@ public class OrderController(
     /// <summary>
     /// Gets a specific order of the current user.
     /// </summary>
-    /// <param name="id">Id of the order.</param>
+    /// <param name="orderid">Id of the order.</param>
     /// <returns>The specified order.</returns>
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
+    public async Task<ActionResult<OrderDTO>> GetOrder(Guid orderid)
     {
-        logger.LogTrace("GetOrder({Guid}) request received.", id);
+        logger.LogTrace("GetOrder({Guid}) request received.", orderid);
         
         var userId = userManager.GetUserId(User);
         if (userId == null)
@@ -63,7 +63,7 @@ public class OrderController(
             return Unauthorized();
         }
         
-        return Ok(await orderService.GetOrder(userId, id, false));
+        return Ok(await orderService.GetOrder(userId, orderid, false));
     }
 
     /// <summary>
