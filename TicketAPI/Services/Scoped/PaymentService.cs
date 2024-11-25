@@ -114,36 +114,27 @@ public class PaymentService : IPaymentService
             var stripeEvent = EventUtility.ConstructEvent(json, request.Headers["Stripe-Signature"], _configuration.GetValue<string>("StripeConfiguration:WebhookSecret"));
 
             if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted) {
+                _logger.LogInformation("Stripe Checkout Session Completed");
                 var session = stripeEvent.Data.Object as Session;
 
                 var userId = session.Metadata["userId"];
                 var user = await _userRepository.GetUserWithAddressAsync(userId);
-                 if (user == null)
-                     throw new NullReferenceException("User not found");
+                if (user == null)
+                {
+                    _logger.LogWarning("User Not Found");
+                    throw new NullReferenceException("User not found");
+                }
                 
-                 if (user.Addresse == null)
-                 {
-                     user.Addresse = new TicketAPI.Data.Models.Address
-                     {
-                         ApplicationUserId = userId,
-                         StreetLine1 = session.ShippingDetails.Address.Line1,
-                         StreetLine2 = session.ShippingDetails.Address.Line2,
-                         City = session.ShippingDetails.Address.City,
-                         State = session.ShippingDetails.Address.State,
-                         Zip = session.ShippingDetails.Address.PostalCode
-                     };
-                 }
-                 else
-                 {
-                     user.Addresse.StreetLine1 = session.ShippingDetails.Address.Line1;
-                     user.Addresse.StreetLine2 = session.ShippingDetails.Address.Line2;
-                     user.Addresse.City = session.ShippingDetails.Address.City;
-                     user.Addresse.State = session.ShippingDetails.Address.State;
-                     user.Addresse.Zip = session.ShippingDetails.Address.PostalCode;
-                 }
+                _logger.LogInformation("Update User Address");
+                user.Addresse.StreetLine1 = session.ShippingDetails.Address.Line1;
+                user.Addresse.StreetLine2 = session.ShippingDetails.Address.Line2;
+                user.Addresse.City = session.ShippingDetails.Address.City;
+                user.Addresse.State = session.ShippingDetails.Address.State;
+                user.Addresse.Zip = session.ShippingDetails.Address.PostalCode;
                 
                 await _userRepository.UpdateUserAsync(user);
                 
+                _logger.LogInformation("Get ShoppingCart");
                 var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(user.Id);
                 if (shoppingCartItems.Count() == 0)
                 {
@@ -153,14 +144,17 @@ public class PaymentService : IPaymentService
 
                 var stripeId = session.Id;
                 
+                _logger.LogInformation("Create Order for User: {userId}", userId);
                 var createOrder = await _orderService.CreateNewOrder(user.Id, stripeId, shoppingCartItems);
                 
+                _logger.LogInformation("Remove ShoppingCart Items");
                 await _shoppingCartService.RemoveAllFromCart(user.Id);
             }
             return new ServiceResponseDTO<bool> { Data = true };
         }
         catch (StripeException e)
         {
+            _logger.LogWarning("Complete Order error: {message}", e.Message);
             return new ServiceResponseDTO<bool> { Data = false, Success = false, Message = e.Message };
         }
     }
