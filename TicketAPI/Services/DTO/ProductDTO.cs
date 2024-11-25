@@ -13,5 +13,5 @@ public class ProductDTO{
     
     public DateTime CreatedAt { get; set; }
     
-    public Guid CategoryId {get; set;}
+    public Guid? CategoryId {get; set;}
 }
