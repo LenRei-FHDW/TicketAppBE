@@ -103,11 +103,14 @@ public class OrderController(
     [HttpPost("CompletOrder")]
     public async Task<IActionResult> PostCompletOrder()
     {
+        logger.LogInformation("Stripe Webhook call startet");
         var response = await paymentService.CompletOrder(Request);
         if(!response.Success)
         {
+            logger.LogWarning("Bad response from Stripe {message}", response.Message);
             return BadRequest(response.Message);
         }
+        logger.LogInformation("Stripe Webhook call end");
         return Ok(response);
     }
     
@@ -119,6 +122,7 @@ public class OrderController(
     [HttpGet("CompletOrder")]
     public IActionResult GetCompletOrder()
     {
+        logger.LogInformation("Redirect call to CallbackSuccess URL");
         var baseUrl = configuration.GetValue<string>("FrontEnd:BaseUrl");
         var callbackUrl = new UriBuilder(new Uri(baseUrl))
         {
@@ -135,6 +139,7 @@ public class OrderController(
     [HttpGet("CanceledOrder")]
     public ActionResult GetCanceledOrder()
     {
+        logger.LogInformation("Redirect call to CallbackCanceled URL");
         var baseUrl = configuration.GetValue<string>("FrontEnd:BaseUrl");
         var callbackUrl = new UriBuilder(new Uri(baseUrl))
         {
