@@ -12,4 +12,6 @@ public class ProductDTO{
     public string ImageName {get; set;} 
     
     public DateTime CreatedAt { get; set; }
+    
+    public Guid? CategoryId {get; set;}
 }

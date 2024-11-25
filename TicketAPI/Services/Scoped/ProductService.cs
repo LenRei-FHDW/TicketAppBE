@@ -54,7 +54,8 @@ public class ProductService(
             Description = productDTO.Description,
             Price = productDTO.Price,
             ImageName = ImageName,
-            CreaterId = userId
+            CreaterId = userId,
+            CategoryId = productDTO.CategoryId,
         };
         
         //var productEntity = _mapper.Map<Product>(productDTO);
@@ -76,6 +77,7 @@ public class ProductService(
         produkt.Description = productDTO.Description;
         produkt.Price = productDTO.Price;
         produkt.ImageName = productDTO.ImageName;
+        produkt.CategoryId = productDTO.CategoryId;
         
         var result = await repository.UpdateAsync(produkt);
         
