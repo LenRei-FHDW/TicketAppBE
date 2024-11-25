@@ -30,6 +30,7 @@ public class ProductRepository(TicketApiDbContext context) : Repository<Product,
     {
         return await _dbSet
             .Where(p => p.CategoryId == categoryId && !p.IsDeleted)
+            .Include(p => p.Category)
             .ToListAsync();
     }
 }
