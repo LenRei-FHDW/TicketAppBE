@@ -24,6 +24,7 @@
         <PackageReference Include="PDFsharp" Version="6.2.0-preview-1" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+        <PackageReference Include="Stripe.net" Version="47.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
     </ItemGroup>
@@ -31,12 +32,42 @@
     <ItemGroup>
       <Folder Include="EmailTemplates\" />
       <Folder Include="Images\" />
+      <Folder Include="Logs\" />
+      <Folder Include="Migrations\" />
+      <Folder Include="Services\Stripe\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
     <ItemGroup>
       <None Include="wwwroot\Uploads\sample2.jpg" />
       <None Include="wwwroot\Uploads\sample1.jpg" />
+      <None Update="EmailTemplates\forgot-password.html">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="EmailTemplates\verification-email.html">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="wwwroot\Uploads\sample1.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\Uploads\sample2.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11"/>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+        <PackageReference Include="Stripe.net" Version="47.1.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+      <Folder Include="Migrations\" />
+      <Folder Include="Services\Stripe\" />
       <None Update="EmailTemplates\forgot-password.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

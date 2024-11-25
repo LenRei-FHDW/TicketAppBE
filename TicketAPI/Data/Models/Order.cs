@@ -14,6 +14,8 @@ public class Order
     [ForeignKey("ApplicationUserId")]
     public ApplicationUser ApplicationUser { get; set; }
     public ICollection<OrderItem> OrderItems { get; } = new List<OrderItem>();
+
+    public string StripeId { get; set; } = string.Empty;
     
     [NotMapped]
     public decimal TotalPrice => OrderItems.Sum(i => i.TotalPrice);

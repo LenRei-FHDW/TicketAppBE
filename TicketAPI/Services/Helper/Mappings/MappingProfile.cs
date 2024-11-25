@@ -30,5 +30,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Description, opt => opt.MapFrom(o => o.Product.Description))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(o => o.Product.Price))
             .ForMember(dest => dest.ImageName, opt => opt.MapFrom(o => o.Product.ImageName));
+        CreateMap<OrderItem, ShoppingCartItemCreateDTO>();
     }
 }
