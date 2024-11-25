@@ -126,8 +126,8 @@ public class PaymentService : IPaymentService
                      user.Addresse = new TicketAPI.Data.Models.Address
                      {
                          ApplicationUserId = userId,
-                         Street1 = session.ShippingDetails.Address.Line1,
-                         Street2 = session.ShippingDetails.Address.Line2,
+                         StreetLine1 = session.ShippingDetails.Address.Line1,
+                         StreetLine2 = session.ShippingDetails.Address.Line2,
                          City = session.ShippingDetails.Address.City,
                          State = session.ShippingDetails.Address.State,
                          Zip = session.ShippingDetails.Address.PostalCode
@@ -135,8 +135,8 @@ public class PaymentService : IPaymentService
                  }
                  else
                  {
-                     user.Addresse.Street1 = session.ShippingDetails.Address.Line1;
-                     user.Addresse.Street2 = session.ShippingDetails.Address.Line2;
+                     user.Addresse.StreetLine1 = session.ShippingDetails.Address.Line1;
+                     user.Addresse.StreetLine2 = session.ShippingDetails.Address.Line2;
                      user.Addresse.City = session.ShippingDetails.Address.City;
                      user.Addresse.State = session.ShippingDetails.Address.State;
                      user.Addresse.Zip = session.ShippingDetails.Address.PostalCode;

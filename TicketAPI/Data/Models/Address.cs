@@ -13,9 +13,9 @@ public class Address
     public ApplicationUser ApplicationUser { get; set; }
 
     [Required]
-    public string? Street1 { get; set; } = string.Empty;
+    public string? StreetLine1 { get; set; } = string.Empty;
     
-    public string? Street2 { get; set; } = string.Empty;
+    public string? StreetLine2 { get; set; } = string.Empty;
 
     [Required]
     public string? City { get; set; } = string.Empty;
