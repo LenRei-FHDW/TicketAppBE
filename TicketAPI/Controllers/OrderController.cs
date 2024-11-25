@@ -72,7 +72,7 @@ public class OrderController(
     /// <returns>Url to Stripe</returns>
     [Authorize]
     [HttpPost("create")]
-    public async Task<ActionResult<Session>> CreateOrder()
+    public async Task<ActionResult<string>> CreateOrder()
     {
         logger.LogTrace("CreateOrder request received.");
         
