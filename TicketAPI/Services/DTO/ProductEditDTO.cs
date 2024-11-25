@@ -13,4 +13,6 @@ public class ProductEditDTO
     public string? ImageName { get; set; }
     
     public IFormFile? ImageFile {get; set;}
+    
+    public Guid? CategoryId {get; set;}
 }

@@ -10,5 +10,5 @@ public class ProductCreateDTO
     
     public IFormFile? ImageFile {get; set;}
     
-    public Guid CategoryId {get; set;}
+    public Guid? CategoryId {get; set;}
 }

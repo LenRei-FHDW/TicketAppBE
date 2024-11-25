@@ -111,7 +111,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -188,46 +188,13 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     
-    await SeedRolesAsync(roleManager);
-    await SeedAdminUserAsync(userManager, configuration);
+    await DbSeeder.SeedRolesAsync(roleManager);
+    await DbSeeder.SeedAdminUserAsync(userManager, configuration);
 }
 
 app.Run();
 
-async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
-{
-    string [] roleNames = ["Admin", "Seller", "User"];
 
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
 
-async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
-{
-    var adminEmail = configuration["AdminUser:Email"];
-    var adminPassword = configuration["AdminUser:Password"];
-    
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
- 
-        var newAdminUser = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-        var createAdminResult = await userManager.CreateAsync(newAdminUser, adminPassword);
-        
-        if (createAdminResult.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdminUser, "Admin");
-        }
-    }
-}
+
 
