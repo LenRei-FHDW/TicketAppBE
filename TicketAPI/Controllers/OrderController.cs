@@ -52,9 +52,9 @@ public class OrderController(
     /// <returns>The specified order.</returns>
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrderDTO>> GetOrder(Guid orderid)
+    public async Task<ActionResult<OrderDTO>> GetOrder(Guid id)
     {
-        logger.LogTrace("GetOrder({Guid}) request received.", orderid);
+        logger.LogTrace("GetOrder({Guid}) request received.", id);
         
         var userId = userManager.GetUserId(User);
         if (userId == null)
@@ -63,7 +63,7 @@ public class OrderController(
             return Unauthorized();
         }
         
-        return Ok(await orderService.GetOrder(userId, orderid, false));
+        return Ok(await orderService.GetOrder(userId, id, false));
     }
 
     /// <summary>
