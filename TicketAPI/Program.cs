@@ -103,10 +103,10 @@ builder.Host.UseSerilog((context, configuration) =>
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder => {
-        builder.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246");
-        builder.AllowAnyMethod();
-        builder.AllowAnyHeader();
+    options.AddDefaultPolicy(policy => {
+        policy.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
