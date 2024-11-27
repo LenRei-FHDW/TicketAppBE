@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.CodeAnalysis;
@@ -46,16 +47,21 @@ namespace TicketAPITests.ServiceTests
             ILoggerFactory NullLoggerFactory = new NullLoggerFactory();
 
             testProduct = new Product();
+            testProduct.Name = "test";
+            testProduct.Description = "test";
+            testProduct.Price = 100;
+            testProduct.ImageName = "test";
             productId = Guid.NewGuid();
             testProduct.ProductId = productId;
+            testProduct.Name = "test";
 
             var productRepository = new Mock<IProductRepository>();
             productRepository.Setup(x => x.GetProductsAsync()).ReturnsAsync(new List<Product> { testProduct });
 
             var repository = new Mock<IRepository<Product, Guid>>();
             repository.Setup(x => x.GetByIdAsync(productId)).ReturnsAsync(testProduct);
-            repository.Setup(x => x.AddAsync(testProduct)).ReturnsAsync(testProduct);
-            repository.Setup(x => x.UpdateAsync(testProduct)).ReturnsAsync(testProduct);
+            repository.Setup(x => x.AddAsync(It.IsAny<Product>())).ReturnsAsync(testProduct);
+            repository.Setup(x => x.UpdateAsync(It.IsAny<Product>())).ReturnsAsync(testProduct);
 
             var profile = new MappingProfile();
             var config = new MapperConfiguration(cfg => { cfg.AddProfile(profile); });
@@ -95,6 +101,10 @@ namespace TicketAPITests.ServiceTests
         {
             var edit = new ProductEditDTO();
             edit.Name = "test";
+            edit.Description = "test";
+            edit.Price = 100;
+            edit.ImageName = "test";
+            edit.ProductId = productId;
             var result = await productService.EditProduct(edit);
             Assert.That(result.Name.Equals("test"));
         }

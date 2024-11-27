@@ -52,6 +52,7 @@ namespace TicketAPITests.ServiceTests
             testOrderItem.Quantity = 1;
             testOrder = new Order();
             orderId = Guid.NewGuid();
+            testOrder.OrderItems.Add(testOrderItem);
             testOrder.OrderId = orderId;
             testOrder.ApplicationUser = testUser;
             testOrderItem.Order = testOrder;
@@ -59,7 +60,7 @@ namespace TicketAPITests.ServiceTests
             var optionsBuilder = new DbContextOptionsBuilder<TicketApiDbContext>();
             var context = new Mock<TicketApiDbContext>(optionsBuilder.Options);
 
-            var ordertRepository = new Mock<OrderRepository>(context);
+            var ordertRepository = new Mock<IOrderRepository>();
             ordertRepository.Setup(x => x.GetByIdAsynchLoadEager(orderId)).ReturnsAsync(testOrder);
 
             var repository = new Mock<IRepository<OrderItem, Guid>>();
@@ -81,7 +82,6 @@ namespace TicketAPITests.ServiceTests
         [Test]
         public async Task GetOrderTest()
         {
-            // Braucht OrderRepositoryInterface
             var result = await orderService.GetOrder("test@email.com",orderId, false);
             Assert.That(result.OrderItems.Count() > 0);
         }
@@ -89,7 +89,6 @@ namespace TicketAPITests.ServiceTests
         [Test]
         public async Task CreateOrderTest()
         {
-            // Braucht OrderRepositoryInterface
             OrderItemPostDTO post = new() { ProductId = orderId, Quantity = 1};
 
             var result = await orderService.CreateNewOrder("test@email.com", new List<OrderItemPostDTO>() { post });

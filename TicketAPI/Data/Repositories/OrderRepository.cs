@@ -3,7 +3,12 @@ using TicketAPI.Data.Models;
 
 namespace TicketAPI.Data.Repositories;
 
-public class OrderRepository(TicketApiDbContext context) : Repository<Order, Guid>(context)
+public interface IOrderRepository
+{
+    Task<Order> GetByIdAsynchLoadEager(Guid orderId);
+}
+
+public class OrderRepository(TicketApiDbContext context) : Repository<Order, Guid>(context), IOrderRepository
 {
     public async Task<Order> GetByIdAsynchLoadEager(Guid orderId)
     {
