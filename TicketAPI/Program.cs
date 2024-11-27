@@ -28,17 +28,24 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ITokenGenerator, JwtGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddTransient<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
+builder.Services.AddScoped<CategoryService>();
+
 
 //Add Repositories
 builder.Services.AddScoped<IRepository<Order, Guid>, Repository<Order, Guid>>();
 builder.Services.AddScoped<IRepository<Product, Guid>, Repository<Product, Guid>>();
 builder.Services.AddScoped<IRepository<OrderItem, Guid>, Repository<OrderItem, Guid>>();
+builder.Services.AddScoped<IRepository<ShoppingCartItem, Guid>, Repository<ShoppingCartItem, Guid>>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ShoppingCartRepository>();
 builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<IRepository<Category, Guid>, Repository<Category, Guid>>();
 
 // DbContext
 builder.Services.AddDbContext<TicketApiDbContext>(options =>
@@ -96,15 +103,15 @@ builder.Host.UseSerilog((context, configuration) =>
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder => {
-        builder.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246");
-        builder.AllowAnyMethod();
-        builder.AllowAnyHeader();
+    options.AddDefaultPolicy(policy => {
+        policy.WithOrigins("*.pfax423.store", "https://localhost:7145", "http://localhost:5246")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -181,46 +188,13 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     
-    await SeedRolesAsync(roleManager);
-    await SeedAdminUserAsync(userManager, configuration);
+    await DbSeeder.SeedRolesAsync(roleManager);
+    await DbSeeder.SeedAdminUserAsync(userManager, configuration);
 }
 
 app.Run();
 
-async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
-{
-    string [] roleNames = ["Admin", "Seller", "User"];
 
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
 
-async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
-{
-    var adminEmail = configuration["AdminUser:Email"];
-    var adminPassword = configuration["AdminUser:Password"];
-    
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
- 
-        var newAdminUser = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-        var createAdminResult = await userManager.CreateAsync(newAdminUser, adminPassword);
-        
-        if (createAdminResult.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdminUser, "Admin");
-        }
-    }
-}
+
 

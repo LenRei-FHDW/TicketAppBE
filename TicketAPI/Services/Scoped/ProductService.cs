@@ -11,7 +11,12 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages product interaction.
 /// </summary>
-public class ProductService(IRepository<Product, Guid> _repository, IProductRepository _productRepository, IMapper _mapper, UserManager<ApplicationUser> _userManager, TicketApiDbContext _context, ILogger<ProductService> _logger)
+public class ProductService(
+        IRepository<Product, Guid> repository, 
+        IProductRepository productRepository, 
+        IMapper mapper, 
+        ILogger<ProductService> _logger
+    )
 {
     /// <summary>
     /// Collects all products and returns them.
@@ -19,8 +24,8 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <returns>A List with all products (id, name, price)</returns>
     public async Task<IEnumerable<ProductPreviewDTO>> GetAllProductsAsync()
     {
-        var productList = await _productRepository.GetProductsAsync();
-        return _mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
+        var productList = await productRepository.GetAllAsync();
+        return mapper.Map<IEnumerable<ProductPreviewDTO>>(productList);
     }
 
     /// <summary>
@@ -30,8 +35,8 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <returns>The specified product.</returns>
     public async Task<ProductDTO> GetProductById(Guid id)
     {
-        var result = await _repository.GetByIdAsync(id);
-        return _mapper.Map<ProductDTO>(result);    
+        var result = await repository.GetByIdAsync(id);
+        return mapper.Map<ProductDTO>(result);    
     }
 
     /// <summary>
@@ -49,13 +54,14 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
             Description = productDTO.Description,
             Price = productDTO.Price,
             ImageName = ImageName,
-            CreaterId = userId
+            CreaterId = userId,
+            CategoryId = productDTO.CategoryId,
         };
         
         //var productEntity = _mapper.Map<Product>(productDTO);
-        var result =  await _repository.AddAsync(productEntity);
+        var result =  await repository.AddAsync(productEntity);
         
-        return _mapper.Map<ProductDTO>(result);
+        return mapper.Map<ProductDTO>(result);
     }
 
     /// <summary>
@@ -65,16 +71,17 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <returns>The updates ProductDTO</returns>
     public async Task<ProductDTO?> EditProduct(ProductEditDTO productDTO)
     {
-        var produkt = await _repository.GetByIdAsync(productDTO.ProductId);
+        var produkt = await repository.GetByIdAsync(productDTO.ProductId);
         
         produkt.Name = productDTO.Name;
         produkt.Description = productDTO.Description;
         produkt.Price = productDTO.Price;
         produkt.ImageName = productDTO.ImageName;
+        produkt.CategoryId = productDTO.CategoryId;
         
-        var result = await _repository.UpdateAsync(produkt);
+        var result = await repository.UpdateAsync(produkt);
         
-        return _mapper.Map<ProductDTO>(produkt);
+        return mapper.Map<ProductDTO>(produkt);
     }
 
     /// <summary>
@@ -83,11 +90,11 @@ public class ProductService(IRepository<Product, Guid> _repository, IProductRepo
     /// <param name="productId">Id of the Product</param>
     public async Task DeleteProduct(Guid productId)
     {
-        var existingProduct = await _repository.GetByIdAsync(productId);
+        var existingProduct = await repository.GetByIdAsync(productId);
         
         existingProduct.IsDeleted = true;
         
-        var result = await _repository.UpdateAsync(existingProduct);
+        await repository.UpdateAsync(existingProduct);
     }
 
     /// <summary>

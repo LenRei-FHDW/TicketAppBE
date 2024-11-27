@@ -1,11 +1,12 @@
-﻿using TicketAPI.Services.Scoped;
+﻿using System.Web;
+using TicketAPI.Services.Scoped;
 
 namespace TicketAPI.Services.Helper;
 
 /// <summary>
 /// Generates email texts.
 /// </summary>
-public class EmailHelper(LinkGenerator _linkGenerator, IEmailSender _emailSender, ILogger<EmailHelper> _logger)
+public class EmailHelper(LinkGenerator linkGenerator, IEmailSender emailSender, ILogger<EmailHelper> logger, IWebHostEnvironment environment, IConfiguration configuration)
 {
     /// <summary>
     /// Generates the text for a verification email.
@@ -16,16 +17,23 @@ public class EmailHelper(LinkGenerator _linkGenerator, IEmailSender _emailSender
     /// <param name="userId">The target user of the verification.</param>
     public void GenerateVerificationEmail(string code, HttpContext context, string email, string userId, string firstName)
     {
-        var callbackUrl = _linkGenerator.GetUriByAction(
-            context,
-            Constants.Constants.ConfirmEmailController,
-            "Email",
-            new { userId = userId, code = code},
-            context.Request.Scheme);
-        var htmlTemplate = File.ReadAllText("EmailTemplates/verification-email.html");
+        var baseUrl = configuration["FrontEnd:BaseUrl"];
+        
+        var callbackUrl = new UriBuilder(new Uri(baseUrl))
+        {
+            Path = configuration["FrontEnd:EmailConfirmEndpunkt"]
+        };
+        
+        var query  = HttpUtility.ParseQueryString(string.Empty);
+        query["userId"] = userId;
+        query["code"] = code;
+        callbackUrl.Query = query.ToString();
+        
+        var path = Path.Combine(environment.ContentRootPath, "EmailTemplates/verification-email.html");
+        var htmlTemplate = File.ReadAllText(path);
         htmlTemplate = htmlTemplate.Replace("{firstName}", firstName);
-        htmlTemplate = htmlTemplate.Replace("{callbackUrl}", callbackUrl);
-         _emailSender.SendEmailAsync(email, "Confirm your email",
+        htmlTemplate = htmlTemplate.Replace("{callbackUrl}", callbackUrl.ToString());
+         emailSender.SendEmailAsync(email, "Confirm your email",
              htmlTemplate);
     }
 
@@ -37,17 +45,21 @@ public class EmailHelper(LinkGenerator _linkGenerator, IEmailSender _emailSender
     /// <param name="userId"></param>
     public void GenerateResetEmail(string code, string email, string userId, string firstName)
     {
-        /*var callbackUrl = _linkGenerator.GetUriByAddress(
-            address: "",
-            values:  new RouteValueDictionary( new { userId = userId, token = code }),
-            scheme: "https",
-            host: new HostString(Constants.Constants.FrontendUrl));
-        Console.WriteLine(callbackUrl);*/
-        var callbackUrl = Constants.Constants.FrontendUrl + Constants.Constants.ResetPasswordPath + "?userId=" + userId + "&token=" + code;
-        var htmlTemplate = File.ReadAllText("EmailTemplates/forgot-password.html");
+        var callbackUrl = new UriBuilder(new Uri(configuration["FrontEnd:BaseUrl"]))
+           {
+               Path = configuration["FrontEnd:EmailForgetPasswordEndpunkt"]
+           };
+           
+        var query  = HttpUtility.ParseQueryString(string.Empty);
+        query["userId"] = userId;
+        query["token"] = code;
+        callbackUrl.Query = query.ToString();
+        
+        var path = Path.Combine(environment.ContentRootPath, "EmailTemplates/forgot-password.html");
+        var htmlTemplate = File.ReadAllText(path);
         htmlTemplate = htmlTemplate.Replace("{firstName}", firstName);
-        htmlTemplate = htmlTemplate.Replace("{callbackUrl}", callbackUrl);
-        _emailSender.SendEmailAsync(
+        htmlTemplate = htmlTemplate.Replace("{callbackUrl}", callbackUrl.ToString());
+        emailSender.SendEmailAsync(
             email,
             "Reset Password",
             htmlTemplate);

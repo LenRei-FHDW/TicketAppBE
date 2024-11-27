@@ -31,7 +31,7 @@ public class UserService(IUserRepository _userRepository) : IUserService
             ApplicationUserId = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Street = user.Addresse?.Street ?? string.Empty,
+            Street = user.Addresse?.StreetLine1 ?? string.Empty,
             City = user.Addresse?.City ?? string.Empty,
             Zip = user.Addresse?.Zip ?? string.Empty,
         };
@@ -57,14 +57,14 @@ public class UserService(IUserRepository _userRepository) : IUserService
             user.Addresse = new Address
             {
                 ApplicationUserId = userId,
-                Street = userDataDTO.Street,
+                StreetLine1 = userDataDTO.Street,
                 City = userDataDTO.City,
                 Zip = userDataDTO.Zip
             };
         }
         else
         {
-            user.Addresse.Street = userDataDTO.Street;
+            user.Addresse.StreetLine1 = userDataDTO.Street;
             user.Addresse.City = userDataDTO.City;
             user.Addresse.Zip = userDataDTO.Zip;
         }
