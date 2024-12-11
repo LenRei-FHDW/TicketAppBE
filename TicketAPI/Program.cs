@@ -31,7 +31,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
-builder.Services.AddTransient<EmailHelper>();
+builder.Services.AddSingleton<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<CategoryService>();
 
@@ -44,7 +44,7 @@ builder.Services.AddScoped<IRepository<ShoppingCartItem, Guid>, Repository<Shopp
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ShoppingCartRepository>();
-builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<IOrderRepository,OrderRepository>();
 builder.Services.AddScoped<IRepository<Category, Guid>, Repository<Category, Guid>>();
 
 // DbContext

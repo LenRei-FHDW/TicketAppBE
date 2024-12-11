@@ -128,7 +128,7 @@ public class PaymentService : IPaymentService
                 user.Addresse.State = session.ShippingDetails.Address.State;
                 user.Addresse.Zip = session.ShippingDetails.Address.PostalCode;
                 
-                await _userRepository.UpdateUserAsync(user);
+                await _userRepository.UpdateAsync(user);
                 
                 _logger.LogInformation("Get ShoppingCart");
                 var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(user.Id);
