@@ -104,7 +104,7 @@ public class OrderController(
     public async Task<IActionResult> PostCompletOrder()
     {
         logger.LogInformation("Stripe Webhook call startet");
-        var response = await paymentService.CompletOrder(Request);
+        var response = await paymentService.CompleteOrder(Request);
         if(!response.Success)
         {
             logger.LogWarning("Bad response from Stripe {message}", response.Message);

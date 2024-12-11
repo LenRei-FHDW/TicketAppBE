@@ -14,7 +14,7 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages all actions of ordering.
 /// </summary>
-public class OrderService(OrderRepository _orderRepository, IRepository<OrderItem, Guid> _orderItemRepository, TicketApiDbContext _context, IMapper _mapper, ILogger<OrderService> _logger, UserManager<ApplicationUser> _userManager, EmailHelper _mailHelper)
+public class OrderService(
     IOrderRepository _orderRepository, 
     IRepository<OrderItem, Guid> _orderItemRepository, 
     TicketApiDbContext _context, 
@@ -31,11 +31,7 @@ public class OrderService(OrderRepository _orderRepository, IRepository<OrderIte
     /// <returns>OrderId, creation date and total price.</returns>
     public async Task<IEnumerable<OrderPreviewDTO>> GetOrdersOfUsers(string userId)
     {
-       var orders = await _context.Orders
-            .Where(o => o.ApplicationUserId == userId)
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Product)
-            .ToListAsync();
+       var orders = await _orderRepository.GetByUserIdJoinOrderItemsJoinProductsAsync(userId);
        return _mapper.Map<IEnumerable<OrderPreviewDTO>>(orders);
     }
     

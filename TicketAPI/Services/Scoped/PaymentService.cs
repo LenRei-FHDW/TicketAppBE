@@ -13,7 +13,7 @@ namespace TicketAPI.Services.Scoped;
 public interface IPaymentService
 {
     Session CreateCheckoutSession(IEnumerable<ShoppingCartItem> shoppingCartItems,string userId, string userEmail);
-    Task<ServiceResponseDTO<bool>> CompletOrder(HttpRequest request);
+    Task<ServiceResponseDTO<bool>> CompleteOrder(HttpRequest request);
 }
 
 /// <summary>
@@ -24,19 +24,15 @@ public class PaymentService : IPaymentService
     private readonly IConfiguration _configuration;
     private readonly ILogger<PaymentService> _logger;
     private readonly OrderService _orderService;
-    private readonly IRepository<TicketAPI.Data.Models.Order, Guid> _orderRepository;
-    private readonly IMapper _mapper;
     private readonly IShoppingCartService _shoppingCartService;
     private readonly IUserRepository _userRepository;
     
-    public PaymentService(IConfiguration configuration, ILogger<PaymentService> logger, OrderService orderService, IRepository<TicketAPI.Data.Models.Order, Guid> orderRepository, IMapper mapper, IShoppingCartService shoppingCartService, IUserRepository userRepository)
+    public PaymentService(IConfiguration configuration, ILogger<PaymentService> logger, OrderService orderService, IShoppingCartService shoppingCartService, IUserRepository userRepository)
     {
         StripeConfiguration.ApiKey = configuration.GetValue<string>("StripeConfiguration:ApiKeyS");
         _configuration = configuration;
         _logger = logger;
         _orderService = orderService;
-        _orderRepository = orderRepository;
-        _mapper = mapper;
         _shoppingCartService = shoppingCartService;
         _userRepository = userRepository;
     }
@@ -106,7 +102,7 @@ public class PaymentService : IPaymentService
     /// </summary>
     /// <param name="request">Data from Stripe</param>
     /// <returns>Status for Stripe</returns>
-    public async Task<ServiceResponseDTO<bool>> CompletOrder(HttpRequest request)
+    public async Task<ServiceResponseDTO<bool>> CompleteOrder(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
         try
@@ -136,7 +132,8 @@ public class PaymentService : IPaymentService
                 
                 _logger.LogInformation("Get ShoppingCart");
                 var shoppingCartItems = await _shoppingCartService.GetModelItemsOfUser(user.Id);
-                if (shoppingCartItems.Count() == 0)
+                var cartItems = shoppingCartItems as ShoppingCartItem[] ?? shoppingCartItems.ToArray();
+                if (cartItems.Length == 0)
                 {
                     _logger.LogWarning("No Product in ShoppingCart");
                     throw new NullReferenceException("No Product in ShoppingCart");
@@ -145,7 +142,7 @@ public class PaymentService : IPaymentService
                 var stripeId = session.Id;
                 
                 _logger.LogInformation("Create Order for User: {userId}", userId);
-                var createOrder = await _orderService.CreateNewOrder(user.Id, stripeId, shoppingCartItems);
+                var createOrder = await _orderService.CreateNewOrder(user.Id, stripeId, cartItems);
                 
                 _logger.LogInformation("Remove ShoppingCart Items");
                 await _shoppingCartService.RemoveAllFromCart(user.Id);
