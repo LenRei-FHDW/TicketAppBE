@@ -69,7 +69,7 @@ public class UserService(IUserRepository _userRepository) : IUserService
             user.Addresse.Zip = userDataDTO.Zip;
         }
 
-        await _userRepository.UpdateUserAsync(user);
+        await _userRepository.UpdateAsync(user);
         return userDataDTO;
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TicketAPI.Controllers.Helper;
 using TicketAPI.Data.Models;
 using TicketAPI.Data.Models.DTO;
 using TicketAPI.Services.Scoped;
@@ -79,29 +79,15 @@ namespace TicketAPI.Controllers
         /// <param name="cartItemDto">Item to edit</param>
         /// <returns>NoContent</returns>
         // PUT: api/Cart/{productId}
+        [ValidateModel]
         [HttpPut("{productId}")]
         public async Task<IActionResult> UpdateCartItem(Guid productId, [FromBody] ShoppingCartItemEditDTO cartItemDto)
         {
-            if (!ModelState.IsValid)
+            ApplicationUser? user = await _userManager.GetUserAsync(User);
+            if (!(user is null))
             {
-                _logger.LogWarning("cartItemDto is invalid: {ModelState}", ModelState.ToString());
-                return BadRequest(ModelState);
+                await _shoppingCartService.EditCartItem(productId, cartItemDto, user);
             }
-            
-            var userId = _userManager.GetUserId(User);
-            if (userId == null)
-            {
-                _logger.LogWarning("UserId is null");
-                return Unauthorized();
-            }
-
-            if (cartItemDto.Quantity == 0)
-            {
-                await _shoppingCartService.RemoveItemFromCart(userId, productId);
-                return NoContent();
-            }
-            
-            await _shoppingCartService.EditCartItem(productId, cartItemDto, userId);
             return NoContent();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.CodeAnalysis;
@@ -47,21 +48,31 @@ namespace TicketAPITests.ServiceTests
 
             ILoggerFactory NullLoggerFactory = new NullLoggerFactory();
 
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.test.json")
+                .Build();
+            var env = new Mock<IWebHostEnvironment>();
 
+            Product testProduct = new Product();
+            testProduct.Price = 10;
             var testOrderItem = new OrderItem();
             testOrderItem.Quantity = 1;
-            testOrder = new Order();
+            testOrderItem.SinglePrice = 10;
+            testOrderItem.Product = testProduct;
+            testOrder = new Order() { };
             orderId = Guid.NewGuid();
             testOrder.OrderItems.Add(testOrderItem);
             testOrder.OrderId = orderId;
             testOrder.ApplicationUser = testUser;
+            testOrder.ApplicationUserId = testUser.Id;
             testOrderItem.Order = testOrder;
 
             var optionsBuilder = new DbContextOptionsBuilder<TicketApiDbContext>();
             var context = new Mock<TicketApiDbContext>(optionsBuilder.Options);
 
             var ordertRepository = new Mock<IOrderRepository>();
-            ordertRepository.Setup(x => x.GetByIdAsynchLoadEager(orderId)).ReturnsAsync(testOrder);
+            ordertRepository.Setup(x => x.GetByIdAsyncLoadEager(orderId)).ReturnsAsync(testOrder);
+            ordertRepository.Setup(x => x.AddAsync(It.IsAny<Order>())).ReturnsAsync(testOrder);
 
             var repository = new Mock<IRepository<OrderItem, Guid>>();
             repository.Setup(x => x.GetByIdAsync(orderId)).ReturnsAsync(testOrderItem);
@@ -74,7 +85,7 @@ namespace TicketAPITests.ServiceTests
             var emailSender = new Mock<IEmailSender>();
             emailSender.Setup(m => m.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask).Verifiable();
-            var emailHelper = new EmailHelper(new LinkMock(), emailSender.Object, NullLoggerFactory.CreateLogger<EmailHelper>());
+            var emailHelper = new EmailHelper(new LinkMock(), emailSender.Object, NullLoggerFactory.CreateLogger<EmailHelper>(), env.Object, configuration);
 
             orderService = new OrderService(ordertRepository.Object, repository.Object, context.Object, mapper, NullLoggerFactory.CreateLogger<OrderService>(), userManager.Object, emailHelper);
         }
@@ -82,16 +93,18 @@ namespace TicketAPITests.ServiceTests
         [Test]
         public async Task GetOrderTest()
         {
-            var result = await orderService.GetOrder("test@email.com",orderId, false);
+            var result = await orderService.GetOrder("123" ,orderId, false);
             Assert.That(result.OrderItems.Count() > 0);
         }
 
         [Test]
         public async Task CreateOrderTest()
         {
-            OrderItemPostDTO post = new() { ProductId = orderId, Quantity = 1};
+            Product product = new Product();
+            product.Price = 100;
+            ShoppingCartItem post = new() { ProductId = orderId, Product = product, Quantity = 1};
 
-            var result = await orderService.CreateNewOrder("test@email.com", new List<OrderItemPostDTO>() { post });
+            var result = await orderService.CreateNewOrder("test@email.com", "test", new List<ShoppingCartItem>() { post });
             Assert.That(result.OrderItems.Count() > 0);
         }
     }

@@ -12,7 +12,7 @@ public interface IShoppingCartService
     Task<IEnumerable<ShoppingCartItem>> GetModelItemsOfUser(string userId);
     Task RemoveItemFromCart(string userId, Guid productId);
     Task RemoveAllFromCart(string userId);
-    Task<ShoppingCartItem> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId);
+    Task<ShoppingCartItemDTO?> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, ApplicationUser user);
 }
 
 public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository, IMapper _mapper) : IShoppingCartService
@@ -86,11 +86,16 @@ public class ShoppingCartService(ShoppingCartRepository _shoppingCartRepository,
     /// <param name="cartItemDto">Item to edit</param>
     /// <param name="userId">Id of User</param>
     /// <returns>Updatet ShoppingCartItem</returns>
-    public async Task<ShoppingCartItem> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, string userId)
+    public async Task<ShoppingCartItemDTO?> EditCartItem(Guid productId, ShoppingCartItemEditDTO cartItemDto, ApplicationUser user)
     {
-        var cartItem = await _shoppingCartRepository.GetShoppingCartItemWhereUserIdAndProductId(userId, productId);
+        var cartItem = await _shoppingCartRepository.GetShoppingCartItemWhereUserIdAndProductId(user.Id, productId);
+        if (cartItemDto.Quantity == 0)
+        {
+            await _shoppingCartRepository.DeleteEntityAsync(cartItem);
+            return null;
+        }
         cartItem.Quantity = cartItemDto.Quantity;
         await _shoppingCartRepository.UpdateAsync(cartItem);
-        return cartItem;
+        return _mapper.Map<ShoppingCartItemDTO>(cartItemDto);
     }   
 }

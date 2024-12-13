@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,6 +24,10 @@ namespace TicketAPITests.ServiceTests
         {
             testUser = new ApplicationUser { UserName = "test", Id = "123", Email = "test@email.com" };
 
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.test.json")
+                .Build();
+            var env = new Mock<IWebHostEnvironment>();
             var store = new Mock<IUserStore<ApplicationUser>>();
             store.Setup(x => x.FindByIdAsync("123", CancellationToken.None))
                 .ReturnsAsync(testUser);
@@ -43,7 +48,7 @@ namespace TicketAPITests.ServiceTests
             var emailSender = new Mock<IEmailSender>();
             emailSender.Setup(m => m.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask).Verifiable();
-            var emailHelper = new EmailHelper(new LinkMock(), emailSender.Object, NullLoggerFactory.CreateLogger<EmailHelper>());
+            var emailHelper = new EmailHelper(new LinkMock(), emailSender.Object, NullLoggerFactory.CreateLogger<EmailHelper>(), env.Object, configuration);
 
             emailService = new EmailService(userManager.Object, contextAccessor, NullLoggerFactory.CreateLogger<EmailService>(), emailHelper);
         }

@@ -61,11 +61,16 @@ public class EmailService(UserManager<ApplicationUser> _userManager, IHttpContex
             _logger.LogInformation("The email '{Email}' is already confirmed.", model.Email);
             return new ConfirmEmailResultDTO(true, true);
         }
-        
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        HttpContext? context = _httpContextAccessor.HttpContext;
-        _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id, user.FirstName);
-        _logger.LogInformation("Verification email with a new confirmation token has been send to '{Email}'", model.Email);
+        _ = Task.Run(async () =>
+        {
+            var code = await  _userManager.GenerateEmailConfirmationTokenAsync(user);
+            HttpContext? context = _httpContextAccessor.HttpContext;
+            _emailHelper.GenerateVerificationEmail(code, context, user.Email, user.Id,
+                user.FirstName);
+            _logger.LogInformation(
+                "Verification email with a new confirmation token has been send to '{Email}'",
+                model.Email);
+        });
         return new ConfirmEmailResultDTO(true, false);
     }
 }
