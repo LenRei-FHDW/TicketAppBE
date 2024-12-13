@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using TicketAPI.Services.Helper;
 using TicketAPI.Services.Scoped;
@@ -22,10 +23,13 @@ namespace TicketAPITests.ServiceTests
             _emailSenderMock.Setup(m => m.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask).Verifiable();
             var _emailSender = _emailSenderMock.Object;
+            var env = new Mock<IWebHostEnvironment>();
+            env.Setup(m => m.ContentRootPath).Returns("");
+            env.Object.ContentRootPath = "test";
 
             ILoggerFactory NullLoggerFactory = new NullLoggerFactory();
 
-            _emailHelper = new EmailHelper(new LinkMock(), _emailSender, NullLoggerFactory.CreateLogger<EmailHelper>());
+            _emailHelper = new EmailHelper(new LinkMock(), _emailSender, NullLoggerFactory.CreateLogger<EmailHelper>(), env.Object, configuration);
         }
 
         [Test]

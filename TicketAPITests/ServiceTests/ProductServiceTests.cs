@@ -34,16 +34,6 @@ namespace TicketAPITests.ServiceTests
         {
             testUser = new ApplicationUser { UserName = "test", Id = "123", Email = "test@email.com" };
 
-            var store = new Mock<IUserStore<ApplicationUser>>();
-            store.Setup(x => x.FindByIdAsync("123", CancellationToken.None))
-                .ReturnsAsync(testUser);
-            var userManager = new Mock<UserManager<ApplicationUser>>(store.Object, null, null, null, null, null, null, null, null);
-            userManager.Setup(x => x.FindByEmailAsync("test@email.com")).ReturnsAsync(testUser);
-            userManager.Setup(x => x.CheckPasswordAsync(testUser, "testPw")).ReturnsAsync(true);
-            userManager.Setup(x => x.CreateAsync(testUser, "testPw")).ReturnsAsync(IdentityResult.Success);
-            userManager.Setup(x => x.GenerateEmailConfirmationTokenAsync(testUser)).ReturnsAsync("testToken");
-            userManager.Setup(x => x.DeleteAsync(testUser)).ReturnsAsync(IdentityResult.Success);
-
             ILoggerFactory NullLoggerFactory = new NullLoggerFactory();
 
             testProduct = new Product();
@@ -56,7 +46,7 @@ namespace TicketAPITests.ServiceTests
             testProduct.Name = "test";
 
             var productRepository = new Mock<IProductRepository>();
-            productRepository.Setup(x => x.GetProductsAsync()).ReturnsAsync(new List<Product> { testProduct });
+            productRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Product> { testProduct });
 
             var repository = new Mock<IRepository<Product, Guid>>();
             repository.Setup(x => x.GetByIdAsync(productId)).ReturnsAsync(testProduct);
@@ -70,7 +60,7 @@ namespace TicketAPITests.ServiceTests
             var optionsBuilder = new DbContextOptionsBuilder<TicketApiDbContext>();
             var context = new Mock<TicketApiDbContext>(optionsBuilder.Options);
 
-            productService = new ProductService(repository.Object, productRepository.Object, mapper, userManager.Object, context.Object, NullLoggerFactory.CreateLogger<ProductService>());
+            productService = new ProductService(repository.Object, productRepository.Object, mapper, NullLoggerFactory.CreateLogger<ProductService>());
         }
 
         [Test]
