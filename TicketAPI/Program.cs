@@ -56,8 +56,8 @@ builder.Services.AddDbContext<TicketApiDbContext>(options =>
     var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString)
     {
         Password = password,
-        SslMode = MySqlSslMode.Required,
-        SslCert = Path.Combine(Directory.GetCurrentDirectory(), "AzureRootCert.pem")
+        //SslMode = MySqlSslMode.Required,
+        //SslCert = Path.Combine(Directory.GetCurrentDirectory(), "AzureRootCert.pem")
     };
     
     options.UseMySql(connectionStringBuilder.ConnectionString, ServerVersion.AutoDetect(connectionStringBuilder.ConnectionString));

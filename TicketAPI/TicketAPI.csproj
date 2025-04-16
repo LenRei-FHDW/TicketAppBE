@@ -33,7 +33,6 @@
       <Folder Include="EmailTemplates\" />
       <Folder Include="Images\" />
       <Folder Include="Logs\" />
-      <Folder Include="Migrations\" />
       <Folder Include="Services\Stripe\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>
@@ -66,7 +65,6 @@
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
-      <Folder Include="Migrations\" />
       <Folder Include="Services\Stripe\" />
       <None Update="EmailTemplates\forgot-password.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
