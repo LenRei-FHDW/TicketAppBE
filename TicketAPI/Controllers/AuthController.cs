@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.Scoped;
@@ -153,6 +155,28 @@ namespace TicketAPI.Controllers
             // #TODO Secure the deletion
             await _authService.DeleteUser(model);
             return NoContent();
+        }
+        
+        [HttpGet("google/login")]
+        public IActionResult GoogleLogin()
+        {
+            var redirectUri = "http://localhost:5246/api/auth/google/callback";
+            var properties = new AuthenticationProperties { RedirectUri = redirectUri };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google/callback")]
+        public async Task<IActionResult> Callback()
+        {
+            var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Google Authentication failed.");
+                return Unauthorized("Authentication failed.");
+            }
+            
+            return Ok(_authService.RegisterGoogle(result));
+            
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Helper;
@@ -86,5 +88,21 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
         await _userManager.DeleteAsync(user);
+    }
+
+    public GoogleModelDTO RegisterGoogle(AuthenticateResult result)
+    {
+        return MapClaimsToDto(result.Principal);
+    }
+
+    private GoogleModelDTO MapClaimsToDto(ClaimsPrincipal user)
+    {
+        return new GoogleModelDTO
+        {
+            Email = user.FindFirst(ClaimTypes.Email)?.Value,
+            FirstName = user.FindFirst(ClaimTypes.GivenName)?.Value,
+            LastName = user.FindFirst(ClaimTypes.Surname)?.Value,
+            GoogleId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        };
     }
 }
