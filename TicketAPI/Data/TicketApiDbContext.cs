@@ -17,7 +17,7 @@ public class TicketApiDbContext(DbContextOptions<TicketApiDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         Guid categoryIdSaison = Guid.NewGuid();
-        Guid categoryIdFamilie = Guid.NewGuid();
+        Guid categoryIdFamilie = Guid.NewGuid(); 
         
         modelBuilder.Entity<ShoppingCartItem>()
             .HasKey(ci => new { ci.ApplicationUserId, ci.ProductId });
