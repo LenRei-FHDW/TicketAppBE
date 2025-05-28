@@ -160,7 +160,7 @@ namespace TicketAPI.Controllers
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUri = "http://localhost:5246/api/auth/google/callback";
+            var redirectUri = Url.Action("Callback", "Auth", null, Request.Scheme);
             var properties = new AuthenticationProperties { RedirectUri = redirectUri };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
