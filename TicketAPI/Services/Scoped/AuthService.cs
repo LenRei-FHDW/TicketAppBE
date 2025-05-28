@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
@@ -87,22 +88,61 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
     public async Task DeleteUser(ResendConfirmationEmailModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
-        await _userManager.DeleteAsync(user);
+        if (user != null) await _userManager.DeleteAsync(user);
     }
 
-    public GoogleModelDTO RegisterGoogle(AuthenticateResult result)
+        public async Task<GoogleResultDTO> RegisterGoogle(AuthenticateResult googleAuthResult)
     {
-        return MapClaimsToDto(result.Principal);
-    }
+        var info = new UserLoginInfo(
+            GoogleDefaults.AuthenticationScheme,
+            googleAuthResult.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new InvalidOperationException(),
+            "Google"
+        );
+        var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+        bool isNewUser = false;
 
-    private GoogleModelDTO MapClaimsToDto(ClaimsPrincipal user)
-    {
-        return new GoogleModelDTO
+        if (user == null)
         {
+            var email = googleAuthResult.Principal.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
+            user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = MapClaimsToAppUser(googleAuthResult.Principal);
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    _logger.LogError("Failed to create user: {Errors}", string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                    return new GoogleResultDTO() { Success = false, Message = "Failed to create user account" };
+                }
+                isNewUser = true;
+            }
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                _logger.LogError("Failed to add Google login: {Errors}", string.Join(", ", addLoginResult.Errors.Select(e => e.Description)));
+                return new GoogleResultDTO { Success = false, Message = "Failed to link Google account" };
+            }
+        }
+        var token = await _tokenGenerator.GenerateToken(user);
+
+        return new GoogleResultDTO
+        {
+            Success = true,
+            Token = token,
+            Message = isNewUser ? "Registration successful" : "Login successful"
+        };
+    }
+
+    private static ApplicationUser MapClaimsToAppUser(ClaimsPrincipal user)
+    {
+        return new ApplicationUser
+        {
+            UserName = user.FindFirst(ClaimTypes.Email)?.Value,
             Email = user.FindFirst(ClaimTypes.Email)?.Value,
-            FirstName = user.FindFirst(ClaimTypes.GivenName)?.Value,
-            LastName = user.FindFirst(ClaimTypes.Surname)?.Value,
-            GoogleId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            EmailConfirmed = true,
+            FirstName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
+            LastName = user.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
         };
     }
 }

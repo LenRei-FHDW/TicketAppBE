@@ -174,9 +174,9 @@ namespace TicketAPI.Controllers
                 _logger.LogWarning("Google Authentication failed.");
                 return Unauthorized("Authentication failed.");
             }
-            
-            return Ok(_authService.RegisterGoogle(result));
-            
+
+            var googleResult = await _authService.RegisterGoogle(result);
+            return googleResult.Success ? Ok(googleResult.Token) : BadRequest(googleResult.Message);
         }
     }
 }
