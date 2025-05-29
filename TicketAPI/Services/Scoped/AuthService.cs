@@ -1,9 +1,6 @@
 ﻿using System.Security.Claims;
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Helper;

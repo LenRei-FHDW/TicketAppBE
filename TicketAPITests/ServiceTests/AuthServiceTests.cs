@@ -53,8 +53,9 @@ namespace TicketAPITests.ServiceTests
                 .Returns(Task.CompletedTask).Verifiable();
             var env = new Mock<IWebHostEnvironment>();
             var emailHelper = new EmailHelper(new LinkMock(), emailSender.Object, NullLoggerFactory.CreateLogger<EmailHelper>(), env.Object, configuration);
+            var mfaService = new MfaService(userManager.Object);
 
-            authService = new AuthService(userManager.Object, contextAccessor, tokenGenerator.Object, NullLoggerFactory.CreateLogger<AuthService>(), emailHelper);
+            authService = new AuthService(userManager.Object, contextAccessor, tokenGenerator.Object, NullLoggerFactory.CreateLogger<AuthService>(), emailHelper, mfaService);
         }
 
         [Test]

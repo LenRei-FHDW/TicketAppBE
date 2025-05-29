@@ -14,7 +14,7 @@ namespace TicketAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger) : ControllerBase
+    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger, ITokenGenerator _tokenGenerator) : ControllerBase
     {
         /// <summary>
         /// Response to a login call.
@@ -215,7 +215,6 @@ namespace TicketAPI.Controllers
         [HttpPost("google/signin")]
         public async Task<IActionResult> GoogleSignIn([FromForm] string credential)
         {
-            _logger.LogTrace(_configuration["Authentication:Google:ClientId"]);
             try
             {
                 var settings = new GoogleJsonWebSignature.ValidationSettings()
