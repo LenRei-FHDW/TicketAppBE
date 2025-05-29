@@ -14,7 +14,7 @@ namespace TicketAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger, IConfiguration _configuration, ITokenGenerator _tokenGenerator) : ControllerBase
+    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger) : ControllerBase
     {
         /// <summary>
         /// Response to a login call.
@@ -37,6 +37,11 @@ namespace TicketAPI.Controllers
             {
                 _logger.LogWarning("Unconfirmed email '{Email}'", model.Email);
                 return BadRequest("Email not confirmed. Please check your email to confirm your account.");
+            }
+
+            if (result.IsMfaEnabled)
+            {
+                return Ok(new { mfa = true });
             }
 
             return Ok(new { token = result.Token });
@@ -158,6 +163,54 @@ namespace TicketAPI.Controllers
             await _authService.DeleteUser(model);
             return NoContent();
         }
+
+        [Authorize]
+        [HttpGet("mfa-setup")]
+        public async Task<IActionResult> SetupMfa()
+        {
+            var qr = await _authService.MfaSetup(User);
+            
+            if(qr == null)
+                return BadRequest("MFA ist bereits aktiviert.");
+            
+            return File(qr, "image/png");
+        }
+        
+        [Authorize]
+        [HttpPost("mfa-enable")]
+        public async Task<IActionResult> EnableMfa([FromBody] string code)
+        {
+            if(await _authService.MfaEnable(User, code))
+                return Ok("MFA aktiviert.");
+            return BadRequest("Ungültiger Authenticator-Code.");
+        }
+        
+        [HttpPost("mfa-verify")]
+        public async Task<IActionResult> VerifyMfa([FromBody] MfaVerifyDTO dto)
+        {
+            if (!await _authService.MfaVerify(dto))
+            {
+                _logger.LogWarning("Invalid login attempt.");
+                return Unauthorized("Invalid login attempt.");
+            }
+
+            _logger.LogTrace("Login request received for MFA.");
+            var result = await _authService.MfaLoginAsync(dto);
+
+            if (result == null)
+            {
+                _logger.LogWarning("Invalid login attempt.");
+                return Unauthorized("Invalid login attempt.");
+            }
+
+            if (!result.IsEmailConfirmed)
+            {
+                _logger.LogWarning("Unconfirmed email '{Email}'", dto.UserEmail);
+                return BadRequest("Email not confirmed. Please check your email to confirm your account.");
+            }
+            
+            return Ok(new { token = result.Token });
+        }
         
         [HttpPost("google/signin")]
         public async Task<IActionResult> GoogleSignIn([FromForm] string credential)
@@ -185,5 +238,4 @@ namespace TicketAPI.Controllers
             }
         }
     }
-    
 }
