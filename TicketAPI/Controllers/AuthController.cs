@@ -37,6 +37,11 @@ namespace TicketAPI.Controllers
                 return BadRequest("Email not confirmed. Please check your email to confirm your account.");
             }
 
+            if (result.IsMfaEnabled)
+            {
+                return Ok(new { mfa = true });
+            }
+
             return Ok(new { token = result.Token });
         }
 
@@ -156,7 +161,55 @@ namespace TicketAPI.Controllers
             await _authService.DeleteUser(model);
             return NoContent();
         }
+
+        [Authorize]
+        [HttpGet("mfa-setup")]
+        public async Task<IActionResult> SetupMfa()
+        {
+            var qr = await _authService.MfaSetup(User);
+            
+            if(qr == null)
+                return BadRequest("MFA ist bereits aktiviert.");
+            
+            return File(qr, "image/png");
+        }
         
+        [Authorize]
+        [HttpPost("mfa-enable")]
+        public async Task<IActionResult> EnableMfa([FromBody] string code)
+        {
+            if(await _authService.MfaEnable(User, code))
+                return Ok("MFA aktiviert.");
+            return BadRequest("Ungültiger Authenticator-Code.");
+        }
+        
+        [HttpPost("mfa-verify")]
+        public async Task<IActionResult> VerifyMfa([FromBody] MfaVerifyDTO dto)
+        {
+            if (!await _authService.MfaVerify(dto))
+            {
+                _logger.LogWarning("Invalid login attempt.");
+                return Unauthorized("Invalid login attempt.");
+            }
+
+            _logger.LogTrace("Login request received for MFA.");
+            var result = await _authService.MfaLoginAsync(dto);
+
+            if (result == null)
+            {
+                _logger.LogWarning("Invalid login attempt.");
+                return Unauthorized("Invalid login attempt.");
+            }
+
+            if (!result.IsEmailConfirmed)
+            {
+                _logger.LogWarning("Unconfirmed email '{Email}'", dto.UserEmail);
+                return BadRequest("Email not confirmed. Please check your email to confirm your account.");
+            }
+            
+            return Ok(new { token = result.Token });
+        }
+		
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {

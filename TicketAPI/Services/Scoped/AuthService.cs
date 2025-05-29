@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Helper;
@@ -11,7 +12,7 @@ namespace TicketAPI.Services.Scoped;
 /// <summary>
 /// Manages Authentification.
 /// </summary>
-public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContextAccessor _httpContextAccessor, ITokenGenerator _tokenGenerator, ILogger<AuthService> _logger, EmailHelper _emailHelper)
+public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContextAccessor _httpContextAccessor, ITokenGenerator _tokenGenerator, ILogger<AuthService> _logger, EmailHelper _emailHelper, IMfaService _mfaService)
 {
     /// <summary>
     /// Logs the user in and creates an auth token.
@@ -38,9 +39,35 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
             _logger.LogWarning("The email has not been confirmed yet.");
             return new LoginResultDTO() { IsEmailConfirmed = false };
         }
+        
+        if (user.TwoFactorEnabled)
+        {
+            return new LoginResultDTO() { IsMfaEnabled = true, IsEmailConfirmed = true };
+        }
 
         var token = await _tokenGenerator.GenerateToken(user);
         _logger.LogInformation("Login for email '{Email}' successfull and token was generated.", model.Email);
+        return new LoginResultDTO() { Token = token, IsEmailConfirmed = true };
+    }
+    
+    public async Task<LoginResultDTO?> MfaLoginAsync(MfaVerifyDTO model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.UserEmail);
+
+        if (user == null)
+        {
+            _logger.LogWarning("User with Email '{Email}' not found.", model.UserEmail);
+            return null;
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            _logger.LogWarning("The email has not been confirmed yet.");
+            return new LoginResultDTO() { IsEmailConfirmed = false };
+        }
+
+        var token = await _tokenGenerator.GenerateToken(user);
+        _logger.LogInformation("Login for email '{Email}' successfull and token was generated.", model.UserEmail);
         return new LoginResultDTO() { Token = token, IsEmailConfirmed = true };
     }
 
@@ -91,7 +118,38 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
         if (user != null) await _userManager.DeleteAsync(user);
     }
 
-        public async Task<GoogleResultDTO> RegisterGoogle(AuthenticateResult googleAuthResult)
+	public async Task<byte[]?> MfaSetup(ClaimsPrincipal userClaimPrincipal)
+    {
+        var user = await _userManager.GetUserAsync(userClaimPrincipal);
+        if (user.TwoFactorEnabled)
+            return null;
+
+        var key = await _mfaService.GenerateNewAuthenticatorKeyAsync(user);
+        var qr = await _mfaService.GenerateQrCodeAsync(user.Email, key);
+        return qr;
+    }
+
+    public async Task<bool> MfaEnable(ClaimsPrincipal userClaimPrincipal, string code)
+    {
+        var user = await _userManager.GetUserAsync(userClaimPrincipal);
+        if (await _mfaService.EnableAuthenticatorAsync(user, code))
+            return true;
+        return false;
+    }
+
+    public async Task<bool> MfaVerify(MfaVerifyDTO dto)
+    {
+        var user = await _userManager.FindByEmailAsync(dto.UserEmail);
+        if (user == null) 
+            return false;
+        
+        if (!await _mfaService.VerifyTwoFactorTokenAsync(user, dto.Code))
+            return false;
+        
+        return true;
+    }
+	
+	public async Task<GoogleResultDTO> RegisterGoogle(AuthenticateResult googleAuthResult)
     {
         var info = new UserLoginInfo(
             GoogleDefaults.AuthenticationScheme,
@@ -145,4 +203,5 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
             LastName = user.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
         };
     }
+
 }
