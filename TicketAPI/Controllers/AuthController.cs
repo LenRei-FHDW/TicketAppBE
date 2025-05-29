@@ -1,9 +1,11 @@
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Services.Scoped;
 using TicketAPI.Services.DTO;
+using TicketAPI.Services.Helper;
 
 namespace TicketAPI.Controllers
 {
@@ -12,7 +14,7 @@ namespace TicketAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger) : ControllerBase
+    public class AuthController(AuthService _authService, EmailService _emailService, PasswordService _passwordService, ILogger<AuthController> _logger, IConfiguration _configuration, ITokenGenerator _tokenGenerator) : ControllerBase
     {
         /// <summary>
         /// Response to a login call.
@@ -157,26 +159,31 @@ namespace TicketAPI.Controllers
             return NoContent();
         }
         
-        [HttpGet("google/login")]
-        public IActionResult GoogleLogin()
+        [HttpPost("google/signin")]
+        public async Task<IActionResult> GoogleSignIn([FromForm] string credential)
         {
-            var redirectUri = Url.Action("Callback", "Auth", null, Request.Scheme);
-            var properties = new AuthenticationProperties { RedirectUri = redirectUri };
-            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet("google/callback")]
-        public async Task<IActionResult> Callback()
-        {
-            var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
-            if (!result.Succeeded)
+            _logger.LogTrace(_configuration["Authentication:Google:ClientId"]);
+            try
             {
-                _logger.LogWarning("Google Authentication failed.");
-                return Unauthorized("Authentication failed.");
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string> { "371245286218-q2dcelj5bffjaie2mbptrd19269eiq43.apps.googleusercontent.com" }
+                };
+                var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+                var user = await _authService.CreateOrLoginGoogleUserAsync(payload);
+                var token = await _tokenGenerator.GenerateToken(user);
+            
+                return Ok(new { 
+                    success = true, 
+                    token = token,
+                });
             }
-
-            var googleResult = await _authService.RegisterGoogle(result);
-            return googleResult.Success ? Ok(googleResult.Token) : BadRequest(googleResult.Message);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Google Sign-In fehlgeschlagen");
+                return BadRequest(new { error = "Authentication failed" });
+            }
         }
     }
+    
 }
