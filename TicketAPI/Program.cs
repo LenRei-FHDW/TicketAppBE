@@ -34,6 +34,7 @@ builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<EmailHelper>();
 builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<IMfaService, MfaService>();
 
 
 //Add Repositories

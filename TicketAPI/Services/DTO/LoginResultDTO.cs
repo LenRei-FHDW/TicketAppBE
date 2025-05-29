@@ -4,4 +4,5 @@ public class LoginResultDTO
 {
     public string? Token { get; set; }
     public bool IsEmailConfirmed { get; set; }
+    public bool IsMfaEnabled { get; set; }
 }
