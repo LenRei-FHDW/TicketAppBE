@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using TicketAPI.Data.Models;
 using TicketAPI.Services.DTO;
 using TicketAPI.Services.Helper;
@@ -113,7 +113,7 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
     public async Task DeleteUser(ResendConfirmationEmailModelDTO model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
-        await _userManager.DeleteAsync(user);
+        if (user != null) await _userManager.DeleteAsync(user);
     }
 
     public async Task<byte[]?> MfaSetup(ClaimsPrincipal userClaimPrincipal)
@@ -145,5 +145,66 @@ public class AuthService(UserManager<ApplicationUser> _userManager, IHttpContext
             return false;
         
         return true;
+    }
+    
+    public async Task<ApplicationUser> CreateOrLoginGoogleUserAsync(GoogleJsonWebSignature.Payload googlePayload)
+    {
+        var existingUser = await _userManager.FindByLoginAsync("Google", googlePayload.Subject);
+        
+        if (existingUser != null)
+        {
+            return existingUser;
+        }
+        var userByEmail = await _userManager.FindByEmailAsync(googlePayload.Email);
+        
+        if (userByEmail != null)
+        {
+            await LinkGoogleAccountAsync(userByEmail, googlePayload);
+            return userByEmail;
+        }
+        var newUser = new ApplicationUser
+        {
+            UserName = googlePayload.Email,
+            Email = googlePayload.Email,
+            EmailConfirmed = true,
+            FirstName = googlePayload.GivenName,
+            LastName = googlePayload.FamilyName,
+        };
+        var createResult = await _userManager.CreateAsync(newUser);
+        
+        if (!createResult.Succeeded)
+        {
+            var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Failed to create user: {errors}");
+        }
+        var loginInfo = new UserLoginInfo("Google", googlePayload.Subject, "Google");
+        var addLoginResult = await _userManager.AddLoginAsync(newUser, loginInfo);
+        
+        if (!addLoginResult.Succeeded)
+        {
+            var errors = string.Join(", ", addLoginResult.Errors.Select(e => e.Description));
+            _logger.LogError("Failed to add Google login to user {UserId}: {Errors}", newUser.Id, errors);
+        }
+
+        return newUser;
+    }
+
+    private async Task LinkGoogleAccountAsync(ApplicationUser user, GoogleJsonWebSignature.Payload googlePayload)
+    {
+        var existingLogins = await _userManager.GetLoginsAsync(user);
+        var hasGoogleLogin =
+            existingLogins.Any(x => x.LoginProvider == "Google" && x.ProviderKey == googlePayload.Subject);
+
+        if (!hasGoogleLogin)
+        {
+            var loginInfo = new UserLoginInfo("Google", googlePayload.Subject, "Google");
+            var result = await _userManager.AddLoginAsync(user, loginInfo);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to link Google account: {errors}");
+            }
+        }
     }
 }

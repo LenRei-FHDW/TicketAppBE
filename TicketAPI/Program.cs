@@ -70,8 +70,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // JWT-Konfiguration
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtSettings = builder.Configuration.GetSection("Authentification:JwtSettings");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+var googleSettings = builder.Configuration.GetSection("Authentification:Google");
 
 builder.Services.AddAuthentication(options =>
     {
@@ -90,7 +91,14 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
-    });
+    })
+    .AddGoogle(options =>
+    {
+        options.SignInScheme = "ExternalCookie";
+        options.ClientId = googleSettings["ClientId"];
+        options.ClientSecret = googleSettings["ClientSecret"];
+    })
+    .AddCookie("ExternalCookie");
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -128,50 +136,53 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/api/images"
 });
 
-app.UseExceptionHandler(errorApp =>
-    errorApp.Run(async context =>
-    {
-        context.Response.ContentType = "application/json";
-        var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
-        if (exceptionHandlerFeature != null)
-        {
-            string message;
-            // Handle specific exceptions here
-            if (exceptionHandlerFeature.Error is KeyNotFoundException)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                message = "Key not found";
-            }
-            else if (exceptionHandlerFeature.Error is ForbiddenException)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                message = "Forbidden";
-            }
-            else if (exceptionHandlerFeature.Error is SecurityTokenExpiredException)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                message = "The token expired";
-            }
-            else
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                message = "Internal Server Error";
-            }
-            
-            var response = new
-            {
-                StatusCode = context.Response.StatusCode,
-                Message = message,
-            };
-            await context.Response.WriteAsJsonAsync(response);
-        }
-    }));
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (app.Environment.IsProduction())
+{
+    app.UseExceptionHandler(errorApp =>
+        errorApp.Run(async context =>
+        {
+            context.Response.ContentType = "application/json";
+            var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+            if (exceptionHandlerFeature != null)
+            {
+                string message;
+                // Handle specific exceptions here
+                if (exceptionHandlerFeature.Error is KeyNotFoundException)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    message = "Key not found";
+                }
+                else if (exceptionHandlerFeature.Error is ForbiddenException)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    message = "Forbidden";
+                }
+                else if (exceptionHandlerFeature.Error is SecurityTokenExpiredException)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    message = "The token expired";
+                }
+                else
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    message = "Internal Server Error";
+                }
+            
+                var response = new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = message,
+                };
+                await context.Response.WriteAsJsonAsync(response);
+            }
+        }));
 }
 
 app.UseHttpsRedirection();
