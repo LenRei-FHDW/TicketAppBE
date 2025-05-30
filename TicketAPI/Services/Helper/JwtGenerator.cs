@@ -56,8 +56,8 @@ public class JwtGenerator : ITokenGenerator
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JwtSettings:Issuer"],
-            audience: _configuration["JwtSettings:Audience"],
+            issuer: _configuration["Authentification:JwtSettings:Issuer"],
+            audience: _configuration["Authentification:JwtSettings:Audience"],
             claims: claims,
             expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Authentification:JwtSettings:ExpireMinutes"])),
             signingCredentials: creds);
