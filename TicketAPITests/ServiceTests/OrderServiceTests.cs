@@ -79,7 +79,7 @@ namespace TicketAPITests.ServiceTests
             repository.Setup(x => x.AddRangeAsync(new List<OrderItem> { testOrderItem })).Returns(Task.CompletedTask);
 
             var profile = new MappingProfile();
-            var config = new MapperConfiguration(cfg => { cfg.AddProfile(profile); });
+            var config = new MapperConfiguration(cfg => { cfg.AddProfile(profile); }, NullLoggerFactory);
             var mapper = new Mapper(config);
 
             var emailSender = new Mock<IEmailSender>();

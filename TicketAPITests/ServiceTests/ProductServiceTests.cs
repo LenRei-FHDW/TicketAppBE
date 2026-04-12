@@ -54,7 +54,7 @@ namespace TicketAPITests.ServiceTests
             repository.Setup(x => x.UpdateAsync(It.IsAny<Product>())).ReturnsAsync(testProduct);
 
             var profile = new MappingProfile();
-            var config = new MapperConfiguration(cfg => { cfg.AddProfile(profile); });
+            var config = new MapperConfiguration(cfg => { cfg.AddProfile(profile); }, NullLoggerFactory);
             var mapper = new Mapper(config);
 
             var optionsBuilder = new DbContextOptionsBuilder<TicketApiDbContext>();
